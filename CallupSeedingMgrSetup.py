@@ -4,6 +4,14 @@ import os
 import shutil
 import zipfile
 
+if os.path.exists('build'):
+	shutil.rmtree( 'build' )
+
+
+# Compile the help files
+from helptxt.compile import CompileHelp
+CompileHelp( 'helptxt' )
+
 distDir = 'dist'
 
 # Cleanup existing dll, pyd and exe files.  The old ones may not be needed, so it is best to clean these up.

@@ -25,6 +25,17 @@ The goal is to get a sequence by driven by these criteria.  For riders with no c
 
 Of course, in your own race you will configure a spreadsheet with your own data.
 
+In a nutshell, __CallupSeedintMgr__ does the following:
+
+    For each rider in Registration:
+        For each Criteria sheet in the spreadsheet:
+            Match the rider's information to a criteria row based on some common column header data
+            If successful, append the criteria's Points or Position to the vector
+            If unsuccessful, append an appropriate default value (zero points or infinite position)
+    Sort all the rider vectors
+
+Vectors are sorted in [Lexographic Order](http://en.wikipedia.org/wiki/Lexicographical_order) for callups, reversed for seeding.
+
 # Structure of the Input Excel File
 
 Take a moment and look at the example spreadsheet.  You will be configuring a similar sheet for your race, but different for your race particulars.  Let's start by looking at the __Sheets__ at the bottom of the screen.
