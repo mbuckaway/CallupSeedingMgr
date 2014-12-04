@@ -363,7 +363,19 @@ class Source( object ):
 				break
 		
 		return FindResult( search, setCur, self, soundalike )
-		
+	
+	def get_match_fields( self, source ):
+		indices = (
+			('by_license',),
+			('by_last_name', 'by_first_name', 'by_uci_code', ),
+			('by_last_name', 'by_first_name', 'by_nation_code', 'by_age', ),
+			('by_first_name', 'by_uci_code', ),
+			('by_last_name', 'by_first_name',),
+		)
+		for pi in indices:
+			if all( (self.field_from_index(i) in self.hasField) and (self.field_from_index(i) in source.hasField) for i in pi ):
+				return tuple( self.field_from_index(i) for i in pi )
+	
 	def find( self, search ):
 		''' Returns (result, messages) - result will be None if no match. '''
 

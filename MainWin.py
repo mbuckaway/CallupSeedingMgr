@@ -105,8 +105,9 @@ class MainWin( wx.Frame ):
 		self.sourceList = wx.ListCtrl( self, style=wx.LC_REPORT, size=(-1,160) )
 		inputBoxSizer.Add( self.sourceList, flag=wx.ALL|wx.EXPAND, border=4 )
 		self.sourceList.InsertColumn(0, "Sheet")
-		self.sourceList.InsertColumn(1, "Information Found")
-		self.sourceList.InsertColumn(2, "Rows", wx.LIST_FORMAT_RIGHT)
+		self.sourceList.InsertColumn(1, "Information")
+		self.sourceList.InsertColumn(2, "Key Column")
+		self.sourceList.InsertColumn(3, "Rows", wx.LIST_FORMAT_RIGHT)
 		
 		instructions = [
 			_('Drag-and-Drop the row numbers on the Left to change the sequence.'),
@@ -280,7 +281,9 @@ class MainWin( wx.Frame ):
 			if add_value_field and source.get_cmp_policy_field():
 				fields = [source.get_cmp_policy_field()] + list(fields)
 			self.sourceList.SetStringItem( idx, 1, u', '.join( make_title(f) for f in fields ) )
-			self.sourceList.SetStringItem( idx, 2, unicode(len(source.results)) )
+			match_fields = source.get_match_fields(self.sources[-1]) if source != self.sources[-1] else []
+			self.sourceList.SetStringItem( idx, 2, u', '.join( make_title(f) for f in match_fields ) )
+			self.sourceList.SetStringItem( idx, 3, unicode(len(source.results)) )
 		
 		insert_source_info( self.sources[-1], False )
 		for source in self.sources[:-1]:
@@ -288,7 +291,7 @@ class MainWin( wx.Frame ):
 			
 		for col in xrange(3):
 			self.sourceList.SetColumnWidth( col, wx.LIST_AUTOSIZE )
-		self.sourceList.SetColumnWidth( 2, 52 )
+		self.sourceList.SetColumnWidth( 3, 52 )
 		
 		self.grid.BeginBatch()
 		CallupResultsToGrid(
