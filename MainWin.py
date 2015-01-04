@@ -93,7 +93,7 @@ class MainWin( wx.Frame ):
 		horizontalControlSizer.AddSpacer( 48 )
 		
 		vs = wx.BoxSizer( wx.VERTICAL )
-		self.tutorialButton = wx.Button( self, label=_('Tutorial...') )
+		self.tutorialButton = wx.Button( self, label=_('Help/Tutorial...') )
 		self.tutorialButton.Bind( wx.EVT_BUTTON, self.onTutorial )
 		vs.Add( self.tutorialButton, flag=wx.ALL, border=4 )
 		branding = wx.HyperlinkCtrl( self, id=wx.ID_ANY, label=u"Powered by CrossMgr", url=u"http://www.sites.google.com/site/crossmgrsoftware/" )

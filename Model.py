@@ -422,7 +422,7 @@ class Source( object ):
 				continue
 			if all( self.field_from_index(i) in self.hasField for i in pi ):
 				findResult = self.match_indices( search, pi )
-				if findResult.status() != findResult.NoMatch:
+				if findResult.get_status() != findResult.NoMatch:
 					return findResult
 		
 		return FindResult( search, [], self, False )
