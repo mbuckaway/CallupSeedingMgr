@@ -241,8 +241,11 @@ class MainWin( wx.Frame ):
 			self.sourceList.DeleteAllItems()
 			Utils.DeleteAllGridRows( self.grid )
 		
-	def doUpdate( self, event ):
-		self.fname = event.GetString() or self.fileBrowse.GetValue()
+	def doUpdate( self, event=None, fnameNew=None ):
+		try:
+			self.fname = (fnameNew or event.GetString() or self.fileBrowse.GetValue())
+		except:
+			self.fname = u''
 		
 		if not self.fname:
 			Utils.MessageOK( self, _('Missing Excel file.  Please select an Excel file.'), _('Missing Excel File') )
@@ -353,11 +356,19 @@ def MainLoop():
 	app = wx.App( False )
 	app.SetAppName("CallupSeedingMgr")
 	
-	parser = OptionParser( usage = "usage: %prog [options]" )
+	parser = OptionParser( usage = "usage: %prog [options] [CallupSpreadsheet.xlsx]" )
+	parser.add_option("-f", "--file", dest="filename", help="callup info file", metavar="CallupSpreadsheet.xlsx")
 	parser.add_option("-q", "--quiet", action="store_false", dest="verbose", default=True, help='hide splash screen')
 	parser.add_option("-r", "--regular", action="store_true", dest="regular", default=False, help='regular size')
 	(options, args) = parser.parse_args()
 
+	# Try to open a specified filename.
+	fileName = options.filename
+	
+	# If nothing, try a positional argument.
+	if not fileName and args:
+		fileName = args[0]
+	
 	dataDir = Utils.getHomeDir()
 	redirectFileName = os.path.join(dataDir, 'CallupSeedingMgr.log')
 	
@@ -388,6 +399,8 @@ def MainLoop():
 		pass
 
 	mainWin.Show()
+	if fileName:
+		wx.CallAfter( mainWin.doUpdate, fnameNew=fileName )
 	
 	if options.verbose:
 		ShowSplashScreen()

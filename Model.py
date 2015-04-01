@@ -8,6 +8,7 @@ import random
 from collections import defaultdict
 from metaphone import doublemetaphone
 from Excel import GetExcelReader
+from UciCountryCodes import uci_country_codes
 import Utils
 
 countryTranslations = {
@@ -20,9 +21,11 @@ countryTranslations = {
 }
 countryTranslations = { k.upper(): v for k, v in countryTranslations.iteritems() }
 
-specialNationCodes = {
-	u'Chinese Taipei':		'TPE',	# For some reason, the UCI thinks Taipei is a country and not the capital of Taiwan.
-}
+specialNationCodes = uci_country_codes
+specialNationCodes.update( {
+		u'Chinese Taipei':		'TPE',	# For some reason, the UCI thinks Taipei is a country and not the capital of Taiwan.
+	}
+)
 specialNationCodes = { k.upper(): v for k, v in specialNationCodes.iteritems() }
 
 class Result( object ):
@@ -213,6 +216,7 @@ class Source( object ):
 		self.results = []
 		self.hasField = set()
 		self.cmp_policy = None
+		self.debug = False
 		for i in self.Indices:
 			setattr( self, i, defaultdict(set) )
 	
@@ -329,11 +333,27 @@ class Source( object ):
 				except:
 					idx[v].add( result )
 	
+	def get_match_fields( self, source ):
+		indices = (
+			('by_license',),
+			('by_last_name', 'by_first_name', 'by_uci_code', ),
+			('by_last_name', 'by_first_name', 'by_nation_code', 'by_age', ),
+			('by_first_name', 'by_uci_code', ),
+			('by_last_name', 'by_first_name',),
+		)
+		for pi in indices:
+			if all( (self.field_from_index(i) in self.hasField) and (self.field_from_index(i) in source.hasField) for i in pi ):
+				return tuple( self.field_from_index(i) for i in pi )
+	
 	def match_indices( self, search, indices ):
 		# Look for a set intersection of one element between all source criteria.
+		
+		if self.debug: print 'find:', indices
+		
 		soundalike = False
 		setCur = None
 		for idx_name in indices:
+			if self.debug: print "matching on:", idx_name
 			idx = getattr( self, idx_name )
 			v = getattr( search, self.field_from_index(idx_name), None )
 			if not v or not idx:
@@ -361,23 +381,15 @@ class Source( object ):
 			
 			if not setCur:
 				break
+			
+			if self.debug: print "matched:", setCur
 		
 		return FindResult( search, setCur, self, soundalike )
 	
-	def get_match_fields( self, source ):
-		indices = (
-			('by_license',),
-			('by_last_name', 'by_first_name', 'by_uci_code', ),
-			('by_last_name', 'by_first_name', 'by_nation_code', 'by_age', ),
-			('by_first_name', 'by_uci_code', ),
-			('by_last_name', 'by_first_name',),
-		)
-		for pi in indices:
-			if all( (self.field_from_index(i) in self.hasField) and (self.field_from_index(i) in source.hasField) for i in pi ):
-				return tuple( self.field_from_index(i) for i in pi )
-	
 	def find( self, search ):
 		''' Returns (result, messages) - result will be None if no match. '''
+		#self.debug = (search.last_name.startswith('EVEN'))
+		if self.debug: print 'find:', search
 
 		# First check for a common License field.  If so, attempt to match it exactly and stop.
 		pi = ['by_license']
