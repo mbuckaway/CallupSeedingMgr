@@ -1,5 +1,31 @@
 # -*- coding: utf-8 -*-
 
+import csv
+import StringIO
+
+def toUnicode( s ):
+	if isinstance( s, unicode ):
+		return s
+	if not isinstance( s, str ):
+		return unicode(s)
+		
+	encodings = (
+		'utf-8', 'iso-8859-1', 'iso-8859-2', 'iso-8859-3', 'iso-8859-4', 'iso-8859-5',
+		'iso-8859-7', 'iso-8859-8', 'iso-8859-9', 'iso-8859-10', 'iso-8859-11',
+		'iso-8859-13', 'iso-8859-14', 'iso-8859-15',' utf-8', 
+	)
+	for encoding in encodings:
+		try:
+			return unicode( s, encoding )
+		except UnicodeDecodeError as e:
+			pass
+	raise e
+
+def unicode_csv_reader(utf8_data, dialect=csv.excel, **kwargs):
+    csv_reader = csv.reader(utf8_data, dialect=dialect, **kwargs)
+    for row in csv_reader:
+        yield [toUnicode(cell) for cell in row]
+
 ioc_county_code_str = '''
 name,name_fr,ISO3166-1-Alpha-2,ISO3166-1-Alpha-3,ISO3166-1-numeric,ITU,MARC,WMO,DS,Dial,FIFA,FIPS,GAUL,IOC,currency_alphabetic_code,currency_country_name,currency_minor_unit,currency_name,currency_numeric_code,is_independent
 Afghanistan,Afghanistan,AF,AFG,004,AFG,af,AF,AFG,93,AFG,AF,1,AFG,AFN,AFGHANISTAN,2,Afghani,971,Yes
@@ -444,3 +470,15 @@ for line in uci_country_code_str.split('\n'):
 		pass
 		
 del uci_country_code_str
+
+ioc_headers = None
+oca_reader = unicode_csv_reader( StringIO.StringIO(ioc_county_code_str) )
+for i, row in enumerate(oca_reader):
+	if not ioc_headers:
+		ioc_headers = { v: col for col, v in enumerate(row) }
+		continue
+	uci_country_codes[row[ioc_headers['name']]] = row[ioc_headers['IOC']]
+	uci_country_codes[row[ioc_headers['name_fr']]] = row[ioc_headers['IOC']]
+	
+del ioc_county_code_str
+
