@@ -264,6 +264,7 @@ class MainWin( wx.Frame ):
 		self.filehistory.AddFileToHistory( self.fname )
 		self.filehistory.Save( self.config )
 		
+		wait = wx.BusyCursor()
 		try:
 			self.registration_headers, self.callup_headers, self.callup_results, self.sources = GetCallups(
 				self.fname,
