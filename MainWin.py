@@ -232,7 +232,7 @@ class MainWin( wx.Frame ):
 			self.setUpdated( False )
 			return
 		if fname != self.fname:
-			self.doUpdate( event )
+			wx.CallAfter( self.doUpdate, fnameNew=fname )
 		
 	def setUpdated( self, updated=True ):
 		self.updated = updated
@@ -267,6 +267,9 @@ class MainWin( wx.Frame ):
 		self.sourceList.SetColumnWidth( 3, 52 )
 		self.sourceList.Refresh()
 
+	def callbackUpdate( self, message ):
+		pass
+		
 	def doUpdate( self, event=None, fnameNew=None ):
 		try:
 			self.fname = (fnameNew or event.GetString() or self.fileBrowse.GetValue())
@@ -290,11 +293,14 @@ class MainWin( wx.Frame ):
 		self.filehistory.Save( self.config )
 		
 		wait = wx.BusyCursor()
+		labelSave, backgroundColourSave = self.updateButton.GetLabel(), self.updateButton.GetForegroundColour()
+		
 		try:
 			self.registration_headers, self.callup_headers, self.callup_results, self.sources = GetCallups(
 				self.fname,
 				soundalike = self.getIsSoundalike(),
 				callbackfunc = self.updateSourceList,
+				callbackupdate = self.callbackUpdate,
 			)
 		except Exception as e:
 			traceback.print_exc()

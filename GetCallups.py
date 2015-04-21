@@ -12,7 +12,9 @@ RegistrationSheet = 'Registration'
 def make_title( field ):
 	return (field[:1].upper + field[1:]).replace( '_', '' )
 
-def GetCallups( fname, soundalike=True, callbackfunc=None ):
+def GetCallups( fname, soundalike=True, callbackfunc=None, callbackupdate=None ):
+
+	if callbackupdate: callbackupdate( _('Reading spreadsheet...') )
 	reader = GetExcelReader( fname )
 	
 	sheet_names = [name for name in reader.sheet_names()]
@@ -23,17 +25,19 @@ def GetCallups( fname, soundalike=True, callbackfunc=None ):
 	if registration_sheet_count > 1:
 		raise ValueError, u'{}: "{}"'.format('Spreadsheet must have exactly one sheet named', RegistrationSheet )
 	
+	if callbackupdate: callbackupdate( u'{}: {}'.format(_('Reading'), RegistrationSheet) )
+	
 	registration = Source( fname, RegistrationSheet, False )
 	errors = registration.read()
-	if callbackfunc:
-		callbackfunc( [registration] )
+	
+	if callbackfunc:callbackfunc( [registration] )
 		
 	sources = []
 	for sheet in sheet_names:
 		if sheet == RegistrationSheet:
 			continue
-		if callbackfunc:
-			callbackfunc( sources + [registration] )
+		if callbackfunc: callbackfunc( sources + [registration] )
+		if callbackupdate: callbackupdate( u'{}: {}'.format(_('Reading'), sheet) )
 		source = Source( fname, sheet, soundalike )
 		source.read()
 		if not source.empty():
@@ -42,8 +46,8 @@ def GetCallups( fname, soundalike=True, callbackfunc=None ):
 	# Add a random sequence as a final sort order.
 	registration.randomize_positions()
 	sources.append( registration )
-	if callbackfunc:
-		callbackfunc( sources )
+	
+	if callbackfunc: callbackfunc( sources )
 	
 	for reg in registration.results:
 		reg.result_vector = [source.find(reg) for source in sources]
