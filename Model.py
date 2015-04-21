@@ -51,15 +51,48 @@ class Result( object ):
 	def __init__( self, **kwargs ):
 		
 		if 'name' in kwargs:
-			# find the last lower-case letter.  Assume that is the last char in the first_name
-			name = kwargs['name']
-			j = 0
-			for i, c in enumerate(name):
-				if c.isalpha() and c.islower() and name[i+1:i+2] == u' ':
-					j = i + 1
-			kwargs['first_name'] = name[:j]
-			kwargs['last_name'] = name[j:]
-		
+			name = kwargs['name'].strip()
+			
+			# Find the last alpha character.
+			cLast = 'C'
+			for i in xrange(len(name)-1, -1, -1):
+				if name[i].isalpha():
+					cLast = name[i]
+					break
+			
+			if cLast == cLast.lower():
+				# Assume the name is of the form LAST NAME First Name.
+				# Find the last upper-case letter preceeding a space.  Assume that is the last char in the last_name
+				j = 0
+				i = 0
+				while 1:
+					i = name.find( u' ', i )
+					if i < 0:
+						if not j:
+							j = len(name)
+						break
+					cPrev = name[i-1]
+					if cPrev.isalpha() and cPrev.isupper():
+						j = i
+					i += 1
+				kwargs['last_name'] = name[:j]
+				kwargs['first_name'] = name[j:]
+			else:
+				# Assume the name field is of the form First Name LAST NAME
+				# Find the last lower-case letter preceeding a space.  Assume that is the last char in the first_name
+				j = 0
+				i = 0
+				while 1:
+					i = name.find( u' ', i )
+					if i < 0:
+						break
+					cPrev = name[i-1]
+					if cPrev.isalpha() and cPrev.islower():
+						j = i
+					i += 1
+				kwargs['first_name'] = name[:j]
+				kwargs['last_name'] = name[j:]
+			
 		for f in self.Fields:
 			setattr( self, f, kwargs.get(f, None) )
 			
@@ -289,7 +322,7 @@ class Source( object ):
 			r.cmp_policy = self.cmp_policy
 		
 		return errors
-		
+	
 	def get_ordered_fields( self ):
 		return tuple(f for f in Result.Fields if f in self.hasField and f not in ('points', 'position', 'row'))
 	

@@ -38,6 +38,7 @@ class MainWin( wx.Frame ):
 		self.fname = None
 		self.updated = False
 		self.firstTime = True
+		self.sources = []
 		
 		self.filehistory = wx.FileHistory(16)
 		self.config = wx.Config(
@@ -240,7 +241,32 @@ class MainWin( wx.Frame ):
 		if not updated:
 			self.sourceList.DeleteAllItems()
 			Utils.DeleteAllGridRows( self.grid )
+			
+	def updateSourceList( self, sources=None ):
+		self.sourceList.DeleteAllItems()
+		sources = (sources or self.sources)
+		if not sources:
+			return
+			
+		def insert_source_info( source, add_value_field=True ):
+			idx = self.sourceList.InsertStringItem( sys.maxint, source.sheet_name )
+			fields = source.get_ordered_fields()
+			if add_value_field and source.get_cmp_policy_field():
+				fields = [source.get_cmp_policy_field()] + list(fields)
+			self.sourceList.SetStringItem( idx, 1, u', '.join( make_title(f) for f in fields ) )
+			match_fields = source.get_match_fields(sources[-1]) if source != sources[-1] else []
+			self.sourceList.SetStringItem( idx, 2, u', '.join( make_title(f) for f in match_fields ) )
+			self.sourceList.SetStringItem( idx, 3, unicode(len(source.results)) )
 		
+		insert_source_info( sources[-1], False )
+		for source in sources[:-1]:
+			insert_source_info( source )
+		
+		for col in xrange(3):
+			self.sourceList.SetColumnWidth( col, wx.LIST_AUTOSIZE )
+		self.sourceList.SetColumnWidth( 3, 52 )
+		self.sourceList.Refresh()
+
 	def doUpdate( self, event=None, fnameNew=None ):
 		try:
 			self.fname = (fnameNew or event.GetString() or self.fileBrowse.GetValue())
@@ -260,7 +286,6 @@ class MainWin( wx.Frame ):
 			self.setUpdated( False )
 			return
 		
-		
 		self.filehistory.AddFileToHistory( self.fname )
 		self.filehistory.Save( self.config )
 		
@@ -269,6 +294,7 @@ class MainWin( wx.Frame ):
 			self.registration_headers, self.callup_headers, self.callup_results, self.sources = GetCallups(
 				self.fname,
 				soundalike = self.getIsSoundalike(),
+				callbackfunc = self.updateSourceList,
 			)
 		except Exception as e:
 			traceback.print_exc()
@@ -278,25 +304,8 @@ class MainWin( wx.Frame ):
 		
 		self.setUpdated( True )
 		
-		self.sourceList.DeleteAllItems()
-		def insert_source_info( source, add_value_field=True ):
-			idx = self.sourceList.InsertStringItem( sys.maxint, source.sheet_name )
-			fields = source.get_ordered_fields()
-			if add_value_field and source.get_cmp_policy_field():
-				fields = [source.get_cmp_policy_field()] + list(fields)
-			self.sourceList.SetStringItem( idx, 1, u', '.join( make_title(f) for f in fields ) )
-			match_fields = source.get_match_fields(self.sources[-1]) if source != self.sources[-1] else []
-			self.sourceList.SetStringItem( idx, 2, u', '.join( make_title(f) for f in match_fields ) )
-			self.sourceList.SetStringItem( idx, 3, unicode(len(source.results)) )
-		
-		insert_source_info( self.sources[-1], False )
-		for source in self.sources[:-1]:
-			insert_source_info( source )
+		self.updateSourceList()
 			
-		for col in xrange(3):
-			self.sourceList.SetColumnWidth( col, wx.LIST_AUTOSIZE )
-		self.sourceList.SetColumnWidth( 3, 52 )
-		
 		self.grid.BeginBatch()
 		CallupResultsToGrid(
 			self.grid,

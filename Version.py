@@ -1,1 +1,1 @@
-AppVerName="CallupSeedingMgr 0.0.2"
+AppVerName="CallupSeedingMgr 0.0.3"

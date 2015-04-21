@@ -49,7 +49,9 @@ class ReadExcelXls( object ):
 		#  BOOLEAN 4 int; 1 means TRUE, 0 means FALSE
 		#  ERROR 5
 		values = []
-		for type, value in itertools.izip(sheet.row_types(row_index), sheet.row_values(row_index)):
+		types = sheet.row_types(row_index)
+		for c, value in enumerate(sheet.row_values(row_index)):
+			type = types[c]
 			if type == 2:
 				if value == int(value):
 					value = int(value)
