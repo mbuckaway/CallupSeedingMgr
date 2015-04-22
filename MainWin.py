@@ -38,6 +38,7 @@ class MainWin( wx.Frame ):
 		self.fname = None
 		self.updated = False
 		self.firstTime = True
+		self.lastUpdateTime = None
 		self.sources = []
 		
 		self.filehistory = wx.FileHistory(16)
@@ -281,6 +282,9 @@ class MainWin( wx.Frame ):
 			self.setUpdated( False )
 			return
 		
+		if self.lastUpdateTime and (datetime.datetime.now() - self.lastUpdateTime).total_seconds() < 1.0:
+			return
+		
 		try:
 			with open(self.fname, 'rb') as f:
 				pass
@@ -322,6 +326,7 @@ class MainWin( wx.Frame ):
 		)
 		self.grid.EndBatch()
 		self.GetSizer().Layout()
+		self.lastUpdateTime = datetime.datetime.now()
 	
 	def doSaveAsExcel( self, event ):
 		if self.grid.GetNumberRows() == 0:
