@@ -167,24 +167,21 @@ To see exactly what columns __CallupSeedingMgr__ is matching on, see the __Match
 
 It is important to get the most up-to-date UCI points data for your race.  The following instructions tell you how to get the points data from the UCI and put it into a spreadsheet that __CallupSeedingMgr__ can work with.
 
-1. Launch Excel.  Ensure you have a sheet called "UCI Points" in your input spreadsheet (create one if there isn't).  If you are updating the points in an existing spreadsheet, make sure you have deleted all the previous data.
-1. In a web browser (Chrome, Firefox, Explorer, etc) Go to the [UCI Site](www.uci.ch)
-1. Pick the race discipline you need.  In this example, we are going with Cyclo-cross.
+1. Launch Excel.  Ensure you have a sheet called "UCI Points" in your input spreadsheet (create one if there isn't).  If you are doing the ranking by UCI points first, make sure this is the first sheet.  If you are updating the points in an existing spreadsheet, make sure you have deleted the previous UCI data.
+1. In a web browser (Chrome, Firefox, Explorer, etc) go to the [UCI Site](www.uci.ch)
+1. Pick the race discipline you need.
 1. Then choose __Rankings__
 1. On the upper left, choose the Category you want (Men Elite, Women Elite, Men Under 23, Men Juniors).  A list of riders and points is displayed in the center of the screen with the __Rank__, __Name__, __Nation__ and __Points__ headers.
 1. Scroll the list to the bottom and choose "All" (make sure you are scrolling the list, not the web page).  This will retrieve all riders worldwide.
 1. Scroll the list back to the top.
-1. Carefully press and hold the left mouse button just to the left of the 'R' in the __Rank__ header.
-1. While still holding the left mouse button, carefully move the mouse to the right.  You will see the elements of the row become selected.
-1. When you get to just past the "s" in __Points__, the entire table become selected.  When this happens, release the mouse button
-1. Press Ctrl+c (hold down the Ctrl key then press the 'c' key, then release both keys).  This copies the information to the clipboard.
-1. Return to Excel and your "UCI Points" sheet.
-1. In cell A1 (at the upper left), do a right click.
-1. Choose "Paste Special..."
-1. Then choose "HTML Text"
-1. See all the UCI information in your spreadsheet.
+1. Press the __Export to Excel__ button on the UCI page.
+1. Open the "download.xls" file created.  You will get a warning that the file is not in Excel format.  Don't worry - Excel will open it anyway.
+1. In "download.xls", press __Ctrl+a)) to select all the data.  Then press __Ctrl+c__ to copy it to the clipboard.
+1. Return to the "UCI Points" sheet in your spreadsheet.
+1. In cell A1 (the first cell in the upper left), do a right click.
+1. Then, choose "Paste"
 
-That's it!  Please don't email me that this process is needlessly complicated (I know).  The UCI does things in a complicated way.
+That's it!  Please don't email me that this process is needlessly complicated (I know).
 
 ## UCI Points Matching Logic
 
