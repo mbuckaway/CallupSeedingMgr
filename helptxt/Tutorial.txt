@@ -174,14 +174,19 @@ It is important to get the most up-to-date UCI points data for your race.  The f
 1. On the upper left, choose the Category you want (Men Elite, Women Elite, Men Under 23, Men Juniors).  A list of riders and points is displayed in the center of the screen with the __Rank__, __Name__, __Nation__ and __Points__ headers.
 1. Scroll the list to the bottom and choose "All" (make sure you are scrolling the list, not the web page).  This will retrieve all riders worldwide.
 1. Scroll the list back to the top.
-1. Press the __Export to Excel__ button on the UCI page.
-1. Open the "download.xls" file created.  You will get a warning that the file is not in Excel format.  Don't worry - Excel will open it anyway.
-1. In "download.xls", press __Ctrl+a)) to select all the data.  Then press __Ctrl+c__ to copy it to the clipboard.
+1. Do not press the __Export to Excel__ button on the UCI page!  The UCI page does not generate a proper Excel file, and all the accents on the rider's names will be corrupted.
+1. Rather, carefully click on just to the left of the "R" on the __Rank__ header.
+1. While holding down the mouse button, carefully drag to the right across the top row.  When you get to the last column, go a little further until the entire table is selected.
+1. Press Ctrl+c to copy your selection from the UCI web page.
 1. Return to the "UCI Points" sheet in your spreadsheet.
 1. In cell A1 (the first cell in the upper left), do a right click.
-1. Then, choose "Paste"
+1. Then, choose "Paste Special..."
+1. Then select __HTTML__, and press OK in the dialog.
 
-That's it!  Please don't email me that this process is needlessly complicated (I know).
+That's it!
+Please don't email me that this process is needlessly complicated (I know).
+
+If you use the "Download as Excel", the accents of the names will be wrong.  Don't do it.
 
 ## UCI Points Matching Logic
 
@@ -192,7 +197,7 @@ Here is what __CallupSeedingMgr__ does:
 1. Gets the First and Last names from the Name - the last name is in all capital letters.
 1. Uses a lookup table based the __Nation__ to get the three-letter country code (using ISO 3166).
 1. Subtracts the __Age__ from the current year to get the year of birth.
-
+ce
 But, this still only gets us the __First Name__, __Last Name__, a __Nation Code__ and a __Year of Birth__.  The best we can do with this is create a partial UCI code of the form "NATYYYY????" - missing the month and day.
 
 This is what __CallupSeedingMgr__ uses.  In practice, it works pretty well.

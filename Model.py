@@ -51,7 +51,7 @@ class Result( object ):
 	def __init__( self, **kwargs ):
 		
 		if 'name' in kwargs:
-			name = kwargs['name'].strip()
+			name = kwargs['name'].replace('*','').strip()
 			
 			# Find the last alpha character.
 			cLast = 'C'
@@ -207,7 +207,7 @@ class FindResult( object ):
 
 	def __init__( self, search, matches, source, soundalike ):
 		self.search = search
-		self.matches = sorted(matches, key = lambda r: r.row)
+		self.matches = sorted(matches or [], key = lambda r: r.row)
 		self.source = source
 		self.soundalike = soundalike
 		
@@ -377,6 +377,7 @@ class Source( object ):
 		for pi in indices:
 			if all( (self.field_from_index(i) in self.hasField) and (self.field_from_index(i) in source.hasField) for i in pi ):
 				return tuple( self.field_from_index(i) for i in pi )
+		return []
 	
 	def match_indices( self, search, indices ):
 		# Look for a set intersection of one element between all source criteria.
