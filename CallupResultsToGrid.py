@@ -22,7 +22,7 @@ def CallupResultsToGrid( grid, registration_headers, callup_headers, callup_resu
 			ignore_headers.add( 'date_of_birth' )
 			ignore_headers.add( 'nation_code' )
 	
-	# Ensure that the ignore headers are actually in the callup_headers.
+	# Ensure that all ignore headers are in the callup_headers.
 	callup_headers_set = set( callup_headers )
 	ignore_headers = set( v for v in ignore_headers if v in callup_headers_set )
 	

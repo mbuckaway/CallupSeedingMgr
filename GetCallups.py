@@ -51,7 +51,6 @@ def GetCallups( fname, soundalike=True, callbackfunc=None, callbackupdate=None )
 	
 	for reg in registration.results:
 		reg.result_vector = [source.find(reg) for source in sources]
-		print 'result_vector:', [r.get_key() for r in reg.result_vector]
 	
 	callup_order = sorted( registration.results, key = lambda reg: tuple(r.get_key() for r in reg.result_vector) )
 	
@@ -65,7 +64,6 @@ def GetCallups( fname, soundalike=True, callbackfunc=None, callbackupdate=None )
 		row.extend( reg.result_vector[:-1] )
 		callup_results.append( row )
 	
-	print 'callup_headers:', callup_headers
 	return registration_headers, callup_headers, callup_results, sources
 
 def make_title( title ):

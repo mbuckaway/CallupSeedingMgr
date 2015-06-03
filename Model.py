@@ -249,7 +249,7 @@ class Source( object ):
 		self.results = []
 		self.hasField = set()
 		self.cmp_policy = None
-		self.debug = True
+		self.debug = False
 		for i in self.Indices:
 			setattr( self, i, defaultdict(set) )
 	
