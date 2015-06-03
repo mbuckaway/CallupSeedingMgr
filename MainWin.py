@@ -107,8 +107,8 @@ class MainWin( wx.Frame ):
 		self.sourceList = wx.ListCtrl( self, style=wx.LC_REPORT, size=(-1,160) )
 		inputBoxSizer.Add( self.sourceList, flag=wx.ALL|wx.EXPAND, border=4 )
 		self.sourceList.InsertColumn(0, "Sheet")
-		self.sourceList.InsertColumn(1, "Information")
-		self.sourceList.InsertColumn(2, "Key Column")
+		self.sourceList.InsertColumn(1, "Data Columns and Derived Information")
+		self.sourceList.InsertColumn(2, "Key Fields")
 		self.sourceList.InsertColumn(3, "Rows", wx.LIST_FORMAT_RIGHT)
 		
 		instructions = [
@@ -315,8 +315,7 @@ class MainWin( wx.Frame ):
 		self.setUpdated( True )
 		
 		self.updateSourceList()
-			
-		self.grid.BeginBatch()
+		
 		CallupResultsToGrid(
 			self.grid,
 			self.registration_headers, self.callup_headers, self.callup_results,
@@ -324,7 +323,6 @@ class MainWin( wx.Frame ):
 			top_riders=self.getTopRiders(),
 			exclude_unranked=self.excludeUnrankedCB.GetValue(),
 		)
-		self.grid.EndBatch()
 		self.GetSizer().Layout()
 		self.lastUpdateTime = datetime.datetime.now()
 	
