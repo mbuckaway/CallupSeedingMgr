@@ -233,7 +233,7 @@ class FindResult( object ):
 		return self.MultiMatch
 	
 	def __repr__( self ):
-		return self.get_value()
+		return unicode(self.get_value())
 	
 class Source( object ):
 	Indices = (
@@ -249,7 +249,7 @@ class Source( object ):
 		self.results = []
 		self.hasField = set()
 		self.cmp_policy = None
-		self.debug = False
+		self.debug = True
 		for i in self.Indices:
 			setattr( self, i, defaultdict(set) )
 	
@@ -378,20 +378,24 @@ class Source( object ):
 			if all( (self.field_from_index(i) in self.hasField) and (self.field_from_index(i) in source.hasField) for i in pi ):
 				return tuple( self.field_from_index(i) for i in pi )
 		return []
-	
+		
+	def has_all_index_fields( self, search, indices ):
+		return all( self.field_from_index(i) in self.hasField and getattr(search, self.field_from_index(i), None) is not None for i in indices )
+			
 	def match_indices( self, search, indices ):
 		# Look for a set intersection of one element between all source criteria.
 		
-		if self.debug: print 'find:', indices
+		if self.debug: print 'match_indices: searchKeys=', indices
 		
 		soundalike = False
 		setCur = None
 		for idx_name in indices:
-			if self.debug: print "matching on:", idx_name
+			if self.debug: print "match_indices: matching on key:", idx_name
 			idx = getattr( self, idx_name )
 			v = getattr( search, self.field_from_index(idx_name), None )
 			if not v or not idx:
 				setCur = None
+				if self.debug: print 'match_indices: missing attribute'
 				break
 			
 			try:
@@ -422,12 +426,14 @@ class Source( object ):
 	
 	def find( self, search ):
 		''' Returns (result, messages) - result will be None if no match. '''
-		#self.debug = (search.last_name.startswith('EVEN'))
-		if self.debug: print 'find:', search
+		if self.debug:
+			print '-' * 60
+			print 'sheet_name:', self.sheet_name
+			print 'find: search=', search, hasattr( search, 'last_name'), hasattr( search, 'uci_code' ), getattr( search, 'uci_code' )
 
 		# First check for a common License field.  If so, attempt to match it exactly and stop.
 		pi = ['by_license']
-		if all( self.field_from_index(i) in self.hasField for i in pi ):
+		if self.has_all_index_fields(search, pi):
 			return self.match_indices( search, pi )
 		
 		# If no license code, try find a perfect, unique match based on the following fields.
@@ -436,7 +442,8 @@ class Source( object ):
 			('by_last_name', 'by_first_name', 'by_nation_code', 'by_age', ),
 		)
 		for pi in perfectIndices:
-			if all( self.field_from_index(i) in self.hasField for i in pi ):
+			if self.has_all_index_fields(search, pi):
+				if self.debug: print 'found index:', pi
 				findResult = self.match_indices( search, pi )
 				if findResult.get_status() == FindResult.Success:
 					return findResult
@@ -451,7 +458,8 @@ class Source( object ):
 			)
 			
 			for pi in potentialIndices:
-				if all( self.field_from_index(i) in self.hasField for i in pi ):
+				if self.has_all_index_fields(search, pi):
+					print 'found index:', pi
 					indices = pi
 					break
 		
@@ -466,9 +474,11 @@ class Source( object ):
 		for pi in lastDitchIndices:
 			if not self.soundalike and any(i.startswith('by_mp_') for i in pi):
 				continue
-			if all( self.field_from_index(i) in self.hasField for i in pi ):
+			if self.has_all_index_fields(search, pi):
+				if self.debug: print 'matching on fields:', pi
 				findResult = self.match_indices( search, pi )
 				if findResult.get_status() != findResult.NoMatch:
+					if self.debug: print 'success', findResult
 					return findResult
 		
 		return FindResult( search, [], self, False )

@@ -21,7 +21,11 @@ def CallupResultsToGrid( grid, registration_headers, callup_headers, callup_resu
 		if v == 'uci_code':
 			ignore_headers.add( 'date_of_birth' )
 			ignore_headers.add( 'nation_code' )
-			
+	
+	# Ensure that the ignore headers are actually in the callup_headers.
+	callup_headers_set = set( callup_headers )
+	ignore_headers = set( v for v in ignore_headers if v in callup_headers_set )
+	
 	header_col = {}
 	col_cur = 0
 	for v in callup_headers:
