@@ -356,7 +356,7 @@ class Source( object ):
 			idx = getattr( self, idx_name )
 				
 			if idx_name.startswith( 'by_mp_' ):	# Initialize a doublemetaphone (soundalike) index.
-				for mp in doublemetaphone(v.encode('utf8')):
+				for mp in doublemetaphone(v.replace('-','').encode('utf8')):
 					if mp:
 						idx[mp].add( result )
 			else:							# Initialize a regular field index.
@@ -406,7 +406,7 @@ class Source( object ):
 			found = set()
 			if idx_name.startswith( 'by_mp_' ):
 				soundalike = True
-				for mp in doublemetaphone(v.encode('utf8')):
+				for mp in doublemetaphone(v.replace('-','').encode('utf8')):
 					if mp and mp in idx:
 						found |= idx[mp]
 			elif v in idx:
@@ -504,11 +504,11 @@ if __name__ == '__main__':
 		print '{}: {}'.format(k, ', '.join( Utils.removeDiacritic(r.full_name) for r in v ))
 		
 	for r in s.results:
-		for p_last in doublemetaphone(r.last_name.encode('utf8')):
+		for p_last in doublemetaphone(r.last_name.replace('-','').encode('utf8')):
 			if not p_last:
 				continue
 			p_last_set = s.by_mp_last_name[p_last]
-			for p_first in doublemetaphone(r.first_name.encode('utf8')):
+			for p_first in doublemetaphone(r.first_name.replace('-','').encode('utf8')):
 				p_first_set = s.by_mp_first_name[p_first]
 				p_last_first_set = p_last_set & p_first_set
 				if len(p_last_first_set) > 1:

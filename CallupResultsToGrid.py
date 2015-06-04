@@ -22,10 +22,6 @@ def CallupResultsToGrid( grid, registration_headers, callup_headers, callup_resu
 			ignore_headers.add( 'date_of_birth' )
 			ignore_headers.add( 'nation_code' )
 	
-	# Ensure that all ignore headers are in the callup_headers.
-	callup_headers_set = set( callup_headers )
-	ignore_headers = set( v for v in ignore_headers if v in callup_headers_set )
-	
 	header_col = {}
 	col_cur = 0
 	for v in callup_headers:
@@ -34,8 +30,7 @@ def CallupResultsToGrid( grid, registration_headers, callup_headers, callup_resu
 		header_col[v] = col_cur
 		col_cur += 1
 	
-	grid.DeleteCols( 0, grid.GetNumberCols() )
-	Utils.AdjustGridSize( grid, rowsRequired=len(callup_results), colsRequired=len(callup_headers) - len(ignore_headers) + 1 )
+	Utils.AdjustGridSize( grid, rowsRequired=len(callup_results), colsRequired=sum(1 for h in callup_headers if h not in ignore_headers) + 1 )
 	
 	for ih, v in enumerate(callup_headers):
 		if v in ignore_headers:
