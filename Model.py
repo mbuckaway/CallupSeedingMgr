@@ -134,7 +134,7 @@ class Result( object ):
 					raise KeyError( u'cannot find nation_code from nation: {}'.format(self.nation) )
 		
 		if self.uci_code:
-			self.uci_code = unicode(self.uci_code).strip()
+			self.uci_code = unicode(self.uci_code).upper().replace(u' ', u'')
 			if len(self.uci_code) != 11:
 				raise ValueError( u'invalid uci_code: {}'.format(self.uci_code) )
 			
@@ -459,7 +459,7 @@ class Source( object ):
 			
 			for pi in potentialIndices:
 				if self.has_all_index_fields(search, pi):
-					print 'found index:', pi
+					if self.debug: print 'found index:', pi
 					indices = pi
 					break
 		
