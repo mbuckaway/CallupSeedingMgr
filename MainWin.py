@@ -1,6 +1,4 @@
 import wx
-import wx.lib.masked.numctrl as NC
-import  wx.lib.intctrl as IC
 from wx.lib.wordwrap import wordwrap
 import wx.lib.filebrowsebutton as filebrowse
 import sys
@@ -28,9 +26,22 @@ def ShowSplashScreen():
 	bitmap = wx.Bitmap( os.path.join(Utils.getImageFolder(), 'CallupSeedingMgr.png'), wx.BITMAP_TYPE_PNG )
 	showSeconds = 2.5
 	frame = wx.SplashScreen(bitmap, wx.SPLASH_CENTRE_ON_SCREEN|wx.SPLASH_TIMEOUT, int(showSeconds*1000), None)
+	
+	
+class ErrorDialog( wx.Dialog ):
+	def __init__( self, parent, errors, id=wx.ID_ANY, title='Errors', size=(800,600) ):
+		wx.Dialog.__init__( self, parent, id, title, size=size, style=wx.RESIZE_BORDER|wx.MAXIMIZE_BOX|wx.MINIMIZE_BOX )
+		bs = wx.BoxSizer( wx.VERTICAL )
+		self.text = wx.TextCtrl( self, style=wx.wx.TE_MULTILINE|wx.TE_READONLY|wx.TE_DONTWRAP )
+		self.text.SetValue( u'\n'.join( u'{}'.format(e).replace( u"u'", u'' ).replace(u"'", u'') for e in errors ) )
+		bs.Add( self.text, 1, flag=wx.EXPAND|wx.ALL, border=4 )
+		self.okButton = wx.Button( self, id=wx.ID_OK )
+		self.okButton.SetDefault()
+		bs.Add( self.okButton, flag=wx.ALIGN_RIGHT|wx.ALL, border=4 )
+		self.SetSizer( bs )
 
 class MainWin( wx.Frame ):
-	def __init__( self, parent, id = wx.ID_ANY, title='', size=(200,200) ):
+	def __init__( self, parent, id=wx.ID_ANY, title='', size=(200,200) ):
 		wx.Frame.__init__(self, parent, id, title, size=size)
 
 		self.SetBackgroundColour( wx.Colour(240,240,240) )
@@ -40,6 +51,7 @@ class MainWin( wx.Frame ):
 		self.firstTime = True
 		self.lastUpdateTime = None
 		self.sources = []
+		self.errors = []
 		
 		self.filehistory = wx.FileHistory(16)
 		self.config = wx.Config(
@@ -110,6 +122,8 @@ class MainWin( wx.Frame ):
 		self.sourceList.InsertColumn(1, "Data Columns and Derived Information")
 		self.sourceList.InsertColumn(2, "Key Fields")
 		self.sourceList.InsertColumn(3, "Rows", wx.LIST_FORMAT_RIGHT)
+		self.sourceList.InsertColumn(4, "Errors", wx.LIST_FORMAT_RIGHT)
+		self.sourceList.Bind( wx.EVT_LIST_ITEM_SELECTED, self.onItemSelected )
 		
 		instructions = [
 			_('Drag-and-Drop the row numbers on the Left to change the sequence.'),
@@ -180,6 +194,16 @@ class MainWin( wx.Frame ):
 		webbrowser.open( fname_excel, new = 2, autoraise = True )
 		webbrowser.open( os.path.join(Utils.getHtmlDocFolder(), 'Tutorial.html'), new = 2, autoraise = True )
 	
+	def onItemSelected(self, event):
+		currentItem = event.m_itemIndex
+		errors = self.errors[(currentItem+len(self.errors)-1) % len(self.errors)]
+		if not errors:
+			return
+		dialog = ErrorDialog( self, errors=errors )
+		dialog.ShowModal()
+		dialog.Destroy()
+		event.Skip()
+
 	def onGridCellClick( self, event ):
 		row = event.GetRow()
 		col = event.GetCol()
@@ -222,7 +246,7 @@ class MainWin( wx.Frame ):
 	def getIsSoundalike( self ):
 		return self.soundalikeCB.GetValue()
 		
-	def getOuputExcelName( self ):
+	def getOutputExcelName( self ):
 		fname_base, fname_suffix = os.path.splitext(self.fname)
 		fname_excel = '{}_{}{}'.format(fname_base, 'Callups' if self.getIsCallup() else 'Seeding', '.xlsx')
 		return fname_excel
@@ -243,13 +267,14 @@ class MainWin( wx.Frame ):
 			self.sourceList.DeleteAllItems()
 			Utils.DeleteAllGridRows( self.grid )
 			
-	def updateSourceList( self, sources=None ):
+	def updateSourceList( self, sources=None, errors=None ):
 		self.sourceList.DeleteAllItems()
 		sources = (sources or self.sources)
+		errors = (errors or self.errors)
 		if not sources:
 			return
 			
-		def insert_source_info( source, add_value_field=True ):
+		def insert_source_info( source, errors, add_value_field=True ):
 			idx = self.sourceList.InsertStringItem( sys.maxint, source.sheet_name )
 			fields = source.get_ordered_fields()
 			if add_value_field and source.get_cmp_policy_field():
@@ -258,10 +283,11 @@ class MainWin( wx.Frame ):
 			match_fields = source.get_match_fields(sources[-1]) if source != sources[-1] else []
 			self.sourceList.SetStringItem( idx, 2, u', '.join( make_title(f) for f in match_fields ) )
 			self.sourceList.SetStringItem( idx, 3, unicode(len(source.results)) )
+			self.sourceList.SetStringItem( idx, 4, unicode(len(errors)) )
 		
-		insert_source_info( sources[-1], False )
-		for source in sources[:-1]:
-			insert_source_info( source )
+		insert_source_info( sources[-1], errors[-1], False )
+		for i, source in enumerate(sources[:-1]):
+			insert_source_info( source, errors[i] )
 		
 		for col in xrange(3):
 			self.sourceList.SetColumnWidth( col, wx.LIST_AUTOSIZE )
@@ -300,7 +326,7 @@ class MainWin( wx.Frame ):
 		labelSave, backgroundColourSave = self.updateButton.GetLabel(), self.updateButton.GetForegroundColour()
 		
 		try:
-			self.registration_headers, self.callup_headers, self.callup_results, self.sources = GetCallups(
+			self.registration_headers, self.callup_headers, self.callup_results, self.sources, self.errors = GetCallups(
 				self.fname,
 				soundalike = self.getIsSoundalike(),
 				callbackfunc = self.updateSourceList,
@@ -330,7 +356,7 @@ class MainWin( wx.Frame ):
 		if self.grid.GetNumberRows() == 0:
 			return
 			
-		fname_excel = self.getOuputExcelName()
+		fname_excel = self.getOutputExcelName()
 		if os.path.isfile( fname_excel ):
 			if not Utils.MessageOKCancel(
 						self,

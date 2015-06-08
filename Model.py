@@ -2,13 +2,13 @@
 import os
 import re
 import sys
+import six
 import datetime
 import iso3166
 import random
-from collections import defaultdict
 from metaphone import doublemetaphone
 from Excel import GetExcelReader
-from UciCountryCodes import uci_country_codes
+from UciCountryCodes import uci_country_codes, uci_country_codes_set
 import Utils
 
 countryTranslations = {
@@ -23,10 +23,20 @@ countryTranslations = { k.upper(): v for k, v in countryTranslations.iteritems()
 
 specialNationCodes = uci_country_codes
 specialNationCodes.update( {
-		u'Chinese Taipei':		'TPE',	# For some reason, the UCI thinks Taipei is a country and not the capital of Taiwan.
+		u'Chinese Taipei':		'TPE',
 	}
 )
 specialNationCodes = { k.upper(): v for k, v in specialNationCodes.iteritems() }
+
+all_quotes = re.compile( u"[\u2019\u0027\u2018\u201C\u201D`\"]", re.UNICODE )
+all_stars = re.compile( u"[*\u2605\u22C6]" )
+def normalize_name( s ):
+	s = all_quotes.sub( u"'", unicode(s).replace(u'(JR)',u'') )
+	s = all_stars.sub( u"", s )
+	return s.strip()
+	
+def normalize_name_lookup( s ):
+	return Utils.removeDiacritic(normalize_name(s)).upper()
 
 class Result( object ):
 	ByPoints, ByPosition = (0, 1)
@@ -47,11 +57,15 @@ class Result( object ):
 	NumericFields = set([
 		'bib', 'age', 'points', 'position'
 	])
+	KeyFields = set([
+		'first_name', 'last_name',
+		'uci_code', 'license', 'nation_code', 'age',
+	])
 
 	def __init__( self, **kwargs ):
 		
 		if 'name' in kwargs:
-			name = kwargs['name'].replace('*','').strip()
+			name = normalize_name( kwargs['name'] )
 			
 			# Find the last alpha character.
 			cLast = 'C'
@@ -62,7 +76,7 @@ class Result( object ):
 			
 			if cLast == cLast.lower():
 				# Assume the name is of the form LAST NAME First Name.
-				# Find the last upper-case letter preceeding a space.  Assume that is the last char in the last_name
+				# Find the last upper-case letter preceding a space.  Assume that is the last char in the last_name.
 				j = 0
 				i = 0
 				while 1:
@@ -79,7 +93,7 @@ class Result( object ):
 				kwargs['first_name'] = name[j:]
 			else:
 				# Assume the name field is of the form First Name LAST NAME
-				# Find the last lower-case letter preceeding a space.  Assume that is the last char in the first_name
+				# Find the last lower-case letter preceding a space.  Assume that is the last char in the first_name.
 				j = 0
 				i = 0
 				while 1:
@@ -118,10 +132,13 @@ class Result( object ):
 				self.points = None
 		
 		if self.last_name:
-			self.last_name = unicode(self.last_name).replace(u'*',u'').strip()
+			self.last_name = normalize_name( self.last_name )
 			
 		if self.first_name:
-			self.first_name = unicode(self.first_name).replace(u'*',u'').replace(u'(JR)',u'').strip()
+			self.first_name = normalize_name( self.first_name )
+		
+		if self.team:
+			self.team = normalize_name( self.team )
 		
 		# Get the 3-digit nation code from the nation name.
 		if self.nation:
@@ -131,18 +148,27 @@ class Result( object ):
 				try:
 					self.nation_code = unicode(specialNationCodes.get(self.nation.upper(), iso3166.countries.get(self.nation).alpha3))
 				except KeyError:
-					raise KeyError( u'cannot find nation_code from nation: {}'.format(self.nation) )
+					if self.nation.upper() in uci_country_codes_set:
+						self.nation_code = self.nation.upper()
+					else:
+						raise KeyError( u'cannot find nation_code from nation: {} ({}, {})'.format(self.nation, self.last_name, self.first_name) )
 		
 		if self.uci_code:
 			self.uci_code = unicode(self.uci_code).upper().replace(u' ', u'')
 			if len(self.uci_code) != 11:
-				raise ValueError( u'invalid uci_code: {}'.format(self.uci_code) )
+				raise ValueError( u'uci_code as invalid length: {} ({}, {})'.format(self.uci_code, self.last_name, self.first_name) )
+
+			if self.uci_code[:3] not in uci_country_codes_set:
+				raise ValueError( u'uci_code contains invalid nation code: {} ({}, {})'.format(self.uci_code, self.last_name, self.first_name) )
 			
 			if not self.date_of_birth:
 				self.date_of_birth = datetime.date( int(self.uci_code[3:7]), int(self.uci_code[7:9]), int(self.uci_code[9:11]) )
 				
 			if not self.nation_code:
 				self.nation_code = self.uci_code[:3]
+			else:
+				if self.nation_code != self.uci_code[:3]:
+					raise KeyError( u'nation code does not match uci_code: {},{} ({}, {})'.format(self.nation_code, self.uci_code, self.last_name, self.first_name) )
 		else:
 			if self.nation_code and self.date_of_birth:
 				self.uci_code = u'{}{}'.format( self.nation_code, self.date_of_birth.strftime('%Y%m%d') )
@@ -154,24 +180,50 @@ class Result( object ):
 			try:
 				self.age = int(self.age)
 			except ValueError:
-				raise ValueError( u'invalid age: {}'.format(self.age) )
+				raise ValueError( u'invalid age: {} ({}, {})'.format(self.age, self.last_name, self.first_name) )
 				
 		assert self.date_of_birth is None or isinstance(self.date_of_birth, datetime.date), 'invalid Date of Birth'
 		
 		self.cmp_policy = None
 	
 	def __repr__( self ):
-		'''
-		return Utils.removeDiacritic(
-			u'Result({})'.format( ', '.join( u'{}={}'.format(f,
-				getattr(self,f,None) if not isinstance(getattr(self,f,None), unicode) else u'"{}"'.format(getattr(self,f,None))) for f in self.Fields)
-			)
-		'''
 		return '({})'.format( Utils.removeDiacritic( self.as_str(self.Fields) ) )
 		
 	def as_str( self, fields=None ):
 		fields = fields or self.Fields
-		return u', '.join( unicode(getattr(self,f).upper() if f == 'last_name' else getattr(self,f)) for f in fields if getattr(self,f,None) is not None and f != 'row' )
+		data = [ unicode(getattr(self,f).upper() if f == 'last_name' else getattr(self,f)) for f in fields if getattr(self,f,None) is not None and f != 'row' ]
+		for i in xrange(len(data)):
+			d = data[i]
+			for t, fmt in ((int, u'{}'), (float, u'{:.3f}')):
+				try:
+					d = fmt.format(t(d))
+					break
+				except ValueError:
+					pass
+			else:
+				d = u'"{}"'.format( d )
+			data[i] = d
+			
+		return u','.join( data )
+		
+	def as_list( self, fields=None ):
+		lines = []
+		fields = fields or self.Fields
+		for f in fields:
+			if f in self.KeyFields:
+				v = getattr( self, f )
+				if v is not None:
+					if f == 'last_name':
+						v = v.upper()
+					lines.append( '{}={}'.format(f, v) )
+		for f in fields:
+			if f not in self.KeyFields:
+				v = getattr( self, f )
+				if v is not None:
+					if f == 'last_name':
+						v = v.upper()
+					lines.append( '{}={}'.format(f, v) )
+		return lines
 	
 	@property
 	def full_name( self ):
@@ -234,7 +286,46 @@ class FindResult( object ):
 	
 	def __repr__( self ):
 		return unicode(self.get_value())
+		
+def validate_uci_code( dCur, uci_code ):
+	if not uci_code:
+		raise ValueError( u'uci_code missing' )
 	
+	if len(uci_code) != 11:
+		raise ValueError( u'uci_code is incorrect length ({}!=11): {}'.format( len(uci_code), uci_code ) )
+	
+	nation_code, year, month, day = uci_code[:3], uci_code[3:7], uci_code[7:9], uci_code[9:11]
+	
+	if nation_code not in uci_country_codes_set:
+		raise ValueError( u'uci_code contains unknown nation {}'.format(uci_code) )
+	
+	try:
+		year = int(year, 10)
+	except ValueError:
+		raise ValueError( u'uci_code contains invalid year: {}'.format(uci_code) )
+	try:
+		month = int(month, 10)
+	except ValueError:
+		raise ValueError( u'uci_code contains invalid month: {}'.format(uci_code) )		
+	try:
+		day = int(day, 10)
+	except ValueError:
+		raise ValueError( u'uci_code contains invalid day: {}'.format(uci_code) )
+	
+	try:
+		dob = datetime.date( year=year, month=month, day=day )
+	except ValueError as e:
+		raise ValueError( u'uci_code contains invalid date: {}: {}'.format(e, uci_code) )
+	
+	if dob > dCur:
+		raise ValueError( u'uci_code is in the future: {}'.format(uci_code) )
+	
+	if dCur.year - dob.year < 3:
+		raise ValueError( u'uci_code is too young: {}'.format(uci_code) )
+	
+	if dCur.year - dob.year > 110:
+		raise ValueError( u'uci_code is too old: {}'.format(uci_code) )
+		
 class Source( object ):
 	Indices = (
 		'by_license', 'by_uci_code',
@@ -251,13 +342,18 @@ class Source( object ):
 		self.cmp_policy = None
 		self.debug = False
 		for i in self.Indices:
-			setattr( self, i, defaultdict(set) )
+			setattr( self, i, {} )
+		self._field_from_index = {}
 	
 	def empty( self ):
 		return not self.results
 	
 	def field_from_index( self, i ):
-		return i[6:] if i.startswith('by_mp_') else i[3:]
+		try:
+			return self._field_from_index[i]
+		except KeyError:
+			self._field_from_index[i] = i[6:] if i.startswith('by_mp_') else i[3:]
+			return self._field_from_index[i]
 		
 	def get_cmp_policy_field( self ):
 		if self.cmp_policy == Result.ByPoints:
@@ -267,9 +363,9 @@ class Source( object ):
 		else:
 			return None
 		
-	def read( self ):
-		reader = GetExcelReader( self.fname )
+	def read( self, reader ):
 		header_fields = ['name'] + list(Result.Fields)
+		dCur = datetime.date.today()
 		header_map = {}
 		errors = []
 		for row_number, row in enumerate(reader.iter_list(self.sheet_name)):
@@ -311,10 +407,23 @@ class Source( object ):
 			try:
 				result = Result( **row_fields )
 			except Exception as e:
-				errors.append( '{}::{} row {}: {}'.format(self.fname, self.sheet_name, row_number+1, e) )
+				errors.append( '{} - row {} - {}'.format(self.sheet_name, row_number+1, e) )
 				continue
 			
 			result.row_number = row_number
+			
+			if 'uci_code' in header_map:
+				try:
+					validate_uci_code( dCur, result.uci_code )
+				except Exception as e:
+					errors.append( '{} - row {} - {} ({}, {})'.format(self.sheet_name, row_number+1, e, result.last_name, result.first_name) )
+					continue
+		
+			if 'license' in header_map:
+				if not result.license:
+					errors.append( '{} - row {} - {} ({}, {})'.format(self.sheet_name, row_number+1, 'missing license', result.last_name, result.first_name) )
+					continue
+		
 			self.add( result )
 		
 		self.cmp_policy = Result.ByPoints if 'points' in self.hasField else Result.ByPosition
@@ -353,18 +462,24 @@ class Source( object ):
 			v = getattr( result, field, None )
 			if not v:
 				continue
-			idx = getattr( self, idx_name )
-				
+			idx = getattr( self, idx_name )			
 			if idx_name.startswith( 'by_mp_' ):	# Initialize a doublemetaphone (soundalike) index.
 				for mp in doublemetaphone(v.replace('-','').encode('utf8')):
 					if mp:
-						idx[mp].add( result )
-			else:							# Initialize a regular field index.
+						try:
+							idx[mp].append( result )
+						except KeyError:
+							idx[mp] = [result]
+			else:								# Initialize a regular field index.
 				assert idx_name != 'by_license' or v not in idx, 'Duplicate license: {}'.format(v)
 				try:
-					idx[Utils.removeDiacritic(v).upper()].add( result )
+					key = normalize_name_lookup(v)
 				except:
-					idx[v].add( result )
+					key = v					
+				try:
+					idx[key].append( result )
+				except KeyError:
+					idx[key] = [result]
 	
 	def get_match_fields( self, source ):
 		indices = (
@@ -397,27 +512,30 @@ class Source( object ):
 				setCur = None
 				if self.debug: print 'match_indices: missing attribute'
 				break
-			
+
 			try:
-				v = Utils.removeDiacritic(v).upper()
+				v = normalize_name_lookup( v )
 			except:
 				pass
 				
+			if self.debug: print 'match_indices: value=', v
+			
 			found = set()
 			if idx_name.startswith( 'by_mp_' ):
 				soundalike = True
 				for mp in doublemetaphone(v.replace('-','').encode('utf8')):
 					if mp and mp in idx:
-						found |= idx[mp]
+						found |= set(idx[mp])
 			elif v in idx:
-				found = idx[v]
+				found = set(idx[v])
 			
 			if setCur is None:
-				setCur = found
+				setCur = set(found)
 			else:
-				setCur &= found
+				setCur &= set(found)
 			
 			if not setCur:
+				if self.debug: print "match_indices: match failed. found=", found
 				break
 			
 			if self.debug: print "matched:", setCur
@@ -430,6 +548,8 @@ class Source( object ):
 			print '-' * 60
 			print 'sheet_name:', self.sheet_name
 			print 'find: search=', search, hasattr( search, 'last_name'), hasattr( search, 'uci_code' ), getattr( search, 'uci_code' )
+			print self.by_last_name.get('BELHUMEUR', None)
+			print self.by_first_name.get('FELIX', None)
 
 		# First check for a common License field.  If so, attempt to match it exactly and stop.
 		pi = ['by_license']
@@ -448,7 +568,7 @@ class Source( object ):
 				if findResult.get_status() == FindResult.Success:
 					return findResult
 			
-		# Failover: try to find a soundalike on a number of fields.
+		# Fail-over: try to find a sound-alike on the following combinations.
 		indices = []
 		if self.soundalike:
 			potentialIndices = (
@@ -492,7 +612,7 @@ class ResultCollection( object ):
 		
 if __name__ == '__main__':
 	s = Source( 'CallupTest.xlsx', '2014 Result' )
-	errors = s.read()
+	errors = s.read( GetExcelReader(self.fname) )
 	print s.by_mp_last_name
 	sys.exit()
 	
@@ -517,4 +637,3 @@ if __name__ == '__main__':
 						)
 						for rr in p_last_first_set )
 
-	

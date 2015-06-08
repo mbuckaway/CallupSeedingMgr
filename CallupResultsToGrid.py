@@ -30,6 +30,7 @@ def CallupResultsToGrid( grid, registration_headers, callup_headers, callup_resu
 		header_col[v] = col_cur
 		col_cur += 1
 	
+	grid.DeleteCols( numCols = grid.GetNumberCols() )
 	Utils.AdjustGridSize( grid, rowsRequired=len(callup_results), colsRequired=sum(1 for h in callup_headers if h not in ignore_headers) + 1 )
 	
 	for ih, v in enumerate(callup_headers):

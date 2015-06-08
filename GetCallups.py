@@ -9,9 +9,6 @@ from Excel import GetExcelReader
 
 RegistrationSheet = 'Registration'
 
-def make_title( field ):
-	return (field[:1].upper + field[1:]).replace( '_', '' )
-
 def GetCallups( fname, soundalike=True, callbackfunc=None, callbackupdate=None ):
 
 	if callbackupdate: callbackupdate( _('Reading spreadsheet...') )
@@ -27,27 +24,32 @@ def GetCallups( fname, soundalike=True, callbackfunc=None, callbackupdate=None )
 	
 	if callbackupdate: callbackupdate( u'{}: {}'.format(_('Reading'), RegistrationSheet) )
 	
-	registration = Source( fname, RegistrationSheet, False )
-	errors = registration.read()
+	reader = GetExcelReader( fname )
 	
-	if callbackfunc:callbackfunc( [registration] )
+	registration = Source( fname, RegistrationSheet, False )
+	registrationErrors = registration.read( reader )
+	
+	if callbackfunc:callbackfunc( [registration], [registrationErrors] )
 		
 	sources = []
+	errors = []
 	for sheet in sheet_names:
 		if sheet == RegistrationSheet:
 			continue
-		if callbackfunc: callbackfunc( sources + [registration] )
+		if callbackfunc: callbackfunc( sources + [registration], errors + [registrationErrors] )
 		if callbackupdate: callbackupdate( u'{}: {}'.format(_('Reading'), sheet) )
 		source = Source( fname, sheet, soundalike )
-		source.read()
-		if not source.empty():
-			sources.append( source )
-	
+		errs = source.read( reader )
+		sources.append( source )
+		errors.append( errs )
+		
 	# Add a random sequence as a final sort order.
 	registration.randomize_positions()
-	sources.append( registration )
 	
-	if callbackfunc: callbackfunc( sources )
+	sources.append( registration )
+	errors.append( registrationErrors )
+	
+	if callbackfunc: callbackfunc( sources, errors )
 	
 	for reg in registration.results:
 		reg.result_vector = [source.find(reg) for source in sources]
@@ -64,14 +66,17 @@ def GetCallups( fname, soundalike=True, callbackfunc=None, callbackupdate=None )
 		row.extend( reg.result_vector[:-1] )
 		callup_results.append( row )
 	
-	return registration_headers, callup_headers, callup_results, sources
+	return registration_headers, callup_headers, callup_results, sources, errors
 
 def make_title( title ):
 	return u' '.join( (w[:1].upper() + w[1:]).replace(u'Uci',u'UCI').replace('Of','of') for w in title.split(u'_') )
 
 if __name__ == '__main__':
-	fname = 'CallupTest.xlsx'
-	registration_headers, callup_headers, callup_results, sources = GetCallups( fname )
-	for row in callup_results:
-		print [Utils.removeDiacritic(unicode(v)) for v in row]
-	CallupResultsToExcel( fname, registration_headers, callup_headers, callup_results )
+	def callbackupdate( msg ):
+		sys.stderr.write( msg + '\n' )
+	
+	fname = 'Elite Men-Ranking Data.xlsx'
+	registration_headers, callup_headers, callup_results, sources, errors = GetCallups( fname, callbackupdate=callbackupdate )
+	#for row in callup_results:
+	#	print [Utils.removeDiacritic(unicode(v)) for v in row]
+	#CallupResultsToExcel( 'test_output.xlsx', registration_headers, callup_headers, callup_results )

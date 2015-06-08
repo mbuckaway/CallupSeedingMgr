@@ -15,25 +15,6 @@ def initTranslation():
 		
 initTranslation()
 
-#-----------------------------------------------------------------------
-# Monkey-patch font so we always fetch a default font face.
-#
-if 'WXMAC' not in wx.Platform:
-	FontFace = 'Arial'
-	FontFromPixelSize = wx.FontFromPixelSize
-	def FontFromPixelSizeFontFace( *args, **kwargs ):
-		if 'face' not in kwargs:
-			kwargs['face'] = FontFace
-		return FontFromPixelSize( *args, **kwargs )
-	wx.FontFromPixelSize = FontFromPixelSizeFontFace
-
-	Font = wx.Font
-	def FontFontFace( *args, **kwargs ):
-		if 'face' not in kwargs:
-			kwargs['face'] = FontFace
-		return Font( *args, **kwargs )
-	wx.Font = FontFontFace
-
 try:
 	from win32com.shell import shell, shellcon
 except ImportError:
@@ -63,7 +44,7 @@ wx.ICON_QUESTION	Shows a question mark icon.
 wx.ICON_INFORMATION	Shows an information (i) icon.
 '''
 
-def MessageOK( parent, message, title = '', iconMask = 0):
+def MessageOK( parent, message, title = '', iconMask = 0 ):
 	dlg = wx.MessageDialog(parent, message, title, wx.OK | iconMask)
 	dlg.ShowModal()
 	dlg.Destroy()

@@ -175,7 +175,7 @@ Mexico,Mexique,MX,MEX,484,MEX,mx,MX,MEX,52,MEX,MX,162,MEX,MXN,MEXICO,2,Mexican P
 "Moldova, Republic of","Moldova, République de",MD,MDA,498,MDA,mv,RM,MD,373,MDA,MD,165,MDA,MDL,"MOLDOVA, REPUBLIC OF",2,Moldovan Leu,498,Yes
 Monaco,Monaco,MC,MCO,492,MCO,mc, ,MC,377,MON,MN,166,MON,EUR,MONACO,2,Euro,978,Yes
 Mongolia,Mongolie,MN,MNG,496,MNG,mp,MO,MGL,976,MNG,MG,167,MGL,MNT,MONGOLIA,2,Tugrik,496,Yes
-Montenegro,Monténégro,ME,MNE,499,MNE,mo, ,MNE,382,MNE,MJ,2647,MGO,EUR,MONTENEGRO,2,Euro,978,Yes
+Montenegro,Monténégro,ME,MNE,499,MNE,mo, ,MNE,382,MNE,MJ,2647,MNE,EUR,MONTENEGRO,2,Euro,978,Yes
 Montserrat,Montserrat,MS,MSR,500,MSR,mj, , ,1-664,MSR,MH,168,MNT,XCD,MONTSERRAT,2,East Caribbean Dollar,951,Territory of GB
 Morocco,Maroc,MA,MAR,504,MRC,mr,MC,MA,212,MAR,MO,169,MAR,MAD,MOROCCO,2,Moroccan Dirham,504,Yes
 Mozambique,Mozambique,MZ,MOZ,508,MOZ,mz,MZ,MOC,258,MOZ,MZ,170,MOZ,MZN,MOZAMBIQUE,2,Mozambique Metical,943,Yes
@@ -479,6 +479,7 @@ for i, row in enumerate(oca_reader):
 		continue
 	uci_country_codes[row[ioc_headers['name']]] = row[ioc_headers['IOC']]
 	uci_country_codes[row[ioc_headers['name_fr']]] = row[ioc_headers['IOC']]
-	
+
 del ioc_county_code_str
 
+uci_country_codes_set = set( uci_country_codes.itervalues() )
