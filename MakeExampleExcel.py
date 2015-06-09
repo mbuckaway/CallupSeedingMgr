@@ -16,9 +16,11 @@ def get_license():
 def MakeExampleExcel( include_uci_points=True, include_national_points=True, include_previous_result=True ):
 	Year = datetime.date.today().year
 	YearAdjust = Year - 2014
-
-	uci_points = Source( os.path.join(Utils.getImageFolder(), 'UCI_Points.xlsx'), 'UCI Points' )
-	uci_points.read()
+	
+	fname = os.path.join(Utils.getImageFolder(), 'UCI_Points.xlsx')
+	reader = GetExcelReader( fname )
+	uci_points = Source( fname, 'UCI Points' )
+	uci_points.read( reader )
 	for r in uci_points.results:
 		r.age += YearAdjust
 		r.uci_code = u'{}{}'.format(

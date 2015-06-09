@@ -67,6 +67,14 @@ class Result( object ):
 		if 'name' in kwargs:
 			name = normalize_name( kwargs['name'] )
 			
+			# Check that there are at least two consecutive capitalized characters in the name somewhere.
+			for i in xrange(len(name)-1):
+				chars2 = name[i:i+1]
+				if chars2.isalpha() and chars2 == chars2.upper():
+					break
+			else:
+				raise ValueError( u'invalid name: last name must be capitalized: {}'.format( name ) )
+			
 			# Find the last alpha character.
 			cLast = 'C'
 			for i in xrange(len(name)-1, -1, -1):
