@@ -122,7 +122,7 @@ class MainWin( wx.Frame ):
 		self.sourceList.InsertColumn(1, "Data Columns and Derived Information")
 		self.sourceList.InsertColumn(2, "Key Fields")
 		self.sourceList.InsertColumn(3, "Rows", wx.LIST_FORMAT_RIGHT)
-		self.sourceList.InsertColumn(4, "Errors", wx.LIST_FORMAT_RIGHT)
+		self.sourceList.InsertColumn(4, "Errors/Warnings", wx.LIST_FORMAT_RIGHT)
 		self.sourceList.Bind( wx.EVT_LIST_ITEM_SELECTED, self.onItemSelected )
 		
 		instructions = [

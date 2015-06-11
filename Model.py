@@ -64,7 +64,7 @@ class Result( object ):
 
 	def __init__( self, **kwargs ):
 		
-		if 'name' in kwargs:
+		if 'name' in kwargs and 'last_name' not in kwargs:
 			name = normalize_name( kwargs['name'] )
 			
 			# Check that there are at least two consecutive capitalized characters in the name somewhere.
@@ -230,14 +230,14 @@ class Result( object ):
 				if v is not None:
 					if f == 'last_name':
 						v = v.upper()
-					lines.append( '{}={}'.format(f, v) )
+					lines.append( u'{}={}'.format(f, v) )
 		for f in fields:
 			if f not in self.KeyFields:
 				v = getattr( self, f )
 				if v is not None:
 					if f == 'last_name':
 						v = v.upper()
-					lines.append( '{}={}'.format(f, v) )
+					lines.append( u'{}={}'.format(f, v) )
 		return lines
 	
 	@property
@@ -260,10 +260,12 @@ class Result( object ):
 
 reAlpha = re.compile( '[^A-Z]+' )
 header_sub = {
-	u'RANK':	u'POSITION',
-	u'POS':		u'POSITION',
-	u'BIBNUM':	u'BIB',
-	u'DOB':		u'DATEOFBIRTH',
+	u'RANK':			u'POSITION',
+	u'POS':				u'POSITION',
+	u'BIBNUM':			u'BIB',
+	u'BIBNUMBER':		u'BIB',
+	u'LICENSENUMBER':	u'LICENSE',
+	u'DOB':				u'DATEOFBIRTH',
 }
 def scrub_header( h ):
 	h = reAlpha.sub( '', Utils.removeDiacritic(unicode(h)).upper() )
@@ -422,7 +424,7 @@ class Source( object ):
 			try:
 				result = Result( **row_fields )
 			except Exception as e:
-				errors.append( '{} - row {} - {}'.format(self.sheet_name, row_number+1, e) )
+				errors.append( u'{} - row {} - {}'.format(self.sheet_name, row_number+1, e) )
 				continue
 			
 			result.row_number = row_number
@@ -431,13 +433,11 @@ class Source( object ):
 				try:
 					validate_uci_code( dCur, result.uci_code )
 				except Exception as e:
-					errors.append( '{} - row {} - {} ({}, {})'.format(self.sheet_name, row_number+1, e, result.last_name, result.first_name) )
-					continue
+					errors.append( u'{} - row {} - Warning: {} ({}, {})'.format(self.sheet_name, row_number+1, e, result.last_name, result.first_name) )
 		
 			if 'license' in header_map:
 				if not result.license:
-					errors.append( '{} - row {} - {} ({}, {})'.format(self.sheet_name, row_number+1, 'missing license', result.last_name, result.first_name) )
-					continue
+					errors.append( u'{} - row {} - Warning: {} ({}, {})'.format(self.sheet_name, row_number+1, u'missing license', result.last_name, result.first_name) )
 		
 			self.add( result )
 		
