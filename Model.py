@@ -8,7 +8,7 @@ import iso3166
 import random
 from metaphone import doublemetaphone
 from Excel import GetExcelReader
-from UciCountryCodes import uci_country_codes, uci_country_codes_set
+from CountryIOC import uci_country_codes, uci_country_codes_set
 import Utils
 
 countryTranslations = {
@@ -153,19 +153,26 @@ class Result( object ):
 			self.nation = unicode(self.nation).replace( u'&', u'and' ).strip()
 			self.nation = countryTranslations.get(self.nation.upper(), self.nation)
 			if not self.nation_code:
+				nationKey = self.nation.upper()
 				try:
-					self.nation_code = unicode(specialNationCodes.get(self.nation.upper(), iso3166.countries.get(self.nation).alpha3))
+					self.nation_code = uci_country_codes[nationKey]
 				except KeyError:
-					if self.nation.upper() in uci_country_codes_set:
-						self.nation_code = self.nation.upper()
+					if nationKey in uci_country_codes_set:
+						self.nation_code = nationKey
 					else:
-						raise KeyError( u'cannot find nation_code from nation: {} ({}, {})'.format(self.nation, self.last_name, self.first_name) )
+						raise KeyError( u'cannot find nation_code from nation: "{}" ({}, {})'.format(self.nation, self.last_name, self.first_name) )
+		
+		if self.nation_code:
+			self.nation_code = self.nation_code.upper()
 		
 		if self.uci_code:
 			self.uci_code = unicode(self.uci_code).upper().replace(u' ', u'')
 			if len(self.uci_code) != 11:
-				raise ValueError( u'uci_code as invalid length: {} ({}, {})'.format(self.uci_code, self.last_name, self.first_name) )
+				raise ValueError( u'uci_code has invalid length: {} ({}, {})'.format(self.uci_code, self.last_name, self.first_name) )
 
+			if self.uci_code[:3] != self.uci_code[:3].upper():
+				self.uci_code = self.uci_code[:3].upper + self.uci_code[3:]
+				
 			if self.uci_code[:3] not in uci_country_codes_set:
 				raise ValueError( u'uci_code contains invalid nation code: {} ({}, {})'.format(self.uci_code, self.last_name, self.first_name) )
 			
