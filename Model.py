@@ -454,6 +454,7 @@ class Source( object ):
 	
 	def randomize_positions( self ):
 		positions = range( 1, len(self.results)+1 )
+		random.seed( 0xededed )
 		random.shuffle( positions )
 		self.cmp_policy = Result.ByPosition
 		for i, r in enumerate(self.results):

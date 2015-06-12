@@ -79,11 +79,11 @@ class MainWin( wx.Frame ):
 		#-------------------------------------------------------------------------------------------
 		verticalControlSizer = wx.BoxSizer( wx.VERTICAL )
 		
-		self.useUciCodeCB = wx.CheckBox( self, label=_("Use UCI Code (assume correct)") )
+		self.useUciCodeCB = wx.CheckBox( self, label=_("Use UCI Code (assume no errors)") )
 		self.useUciCodeCB.SetValue( True )
 		verticalControlSizer.Add( self.useUciCodeCB, flag=wx.ALL, border=4 )
 
-		self.useLicenseCB = wx.CheckBox( self, label=_("Use License Code (assume correct)") )
+		self.useLicenseCB = wx.CheckBox( self, label=_("Use License (assume no errors)") )
 		self.useLicenseCB.SetValue( True )
 		verticalControlSizer.Add( self.useLicenseCB, flag=wx.ALL, border=4 )
 
