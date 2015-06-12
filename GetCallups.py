@@ -9,7 +9,7 @@ from Excel import GetExcelReader
 
 RegistrationSheet = 'Registration'
 
-def GetCallups( fname, soundalike=True, callbackfunc=None, callbackupdate=None ):
+def GetCallups( fname, soundalike=True, useUciCode=True, useLicense=True, callbackfunc=None, callbackupdate=None ):
 
 	if callbackupdate: callbackupdate( _('Reading spreadsheet...') )
 	reader = GetExcelReader( fname )
@@ -38,7 +38,7 @@ def GetCallups( fname, soundalike=True, callbackfunc=None, callbackupdate=None )
 			continue
 		if callbackfunc: callbackfunc( sources + [registration], errors + [registrationErrors] )
 		if callbackupdate: callbackupdate( u'{}: {}'.format(_('Reading'), sheet) )
-		source = Source( fname, sheet, soundalike )
+		source = Source( fname, sheet, soundalike=soundalike, useUciCode=useUciCode, useLicense=useLicense )
 		errs = source.read( reader )
 		sources.append( source )
 		errors.append( errs )

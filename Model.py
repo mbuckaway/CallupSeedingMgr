@@ -350,10 +350,12 @@ class Source( object ):
 		'by_mp_last_name', 'by_mp_first_name',
 		'by_nation_code', 'by_date_of_birth', 'by_age',
 	)
-	def __init__( self, fname, sheet_name, soundalike = True ):
+	def __init__( self, fname, sheet_name, soundalike=True, useUciCode=True, useLicense=True ):
 		self.fname = fname
 		self.sheet_name = sheet_name
 		self.soundalike = soundalike
+		self.useUciCode = useUciCode
+		self.useLicense = useLicense
 		self.results = []
 		self.hasField = set()
 		self.cmp_policy = None
@@ -567,25 +569,27 @@ class Source( object ):
 			print self.by_first_name.get('FELIX', None)
 
 		# First check for a common License field.  If so, attempt to match it exactly and stop.
-		pi = ['by_license']
-		if self.has_all_index_fields(search, pi):
-			return self.match_indices( search, pi )
+		if self.useLicense:
+			pi = ['by_license']
+			if self.has_all_index_fields(search, pi):
+				return self.match_indices( search, pi )
 		
 		# If no license code, try find a perfect, unique match based on the following fields.
-		perfectIndices = (
-			('by_last_name', 'by_first_name', 'by_uci_code', ),
-			('by_last_name', 'by_first_name', 'by_nation_code', 'by_age', ),
-		)
-		for pi in perfectIndices:
-			if self.has_all_index_fields(search, pi):
-				if self.debug: print 'found index:', pi
-				findResult = self.match_indices( search, pi )
-				if findResult.get_status() == FindResult.Success:
-					return findResult
+		if self.useUciCode:
+			perfectIndices = (
+				('by_last_name', 'by_first_name', 'by_uci_code', ),
+				('by_last_name', 'by_first_name', 'by_nation_code', 'by_age', ),
+			)
+			for pi in perfectIndices:
+				if self.has_all_index_fields(search, pi):
+					if self.debug: print 'found index:', pi
+					findResult = self.match_indices( search, pi )
+					if findResult.get_status() == FindResult.Success:
+						return findResult
 			
 		# Fail-over: try to find a sound-alike on the following combinations.
 		indices = []
-		if self.soundalike:
+		if self.soundalike and self.useUciCode:
 			potentialIndices = (
 				('by_mp_last_name', 'by_mp_first_name', 'by_uci_code', ),
 				('by_mp_last_name', 'by_mp_first_name', 'by_nation_code', 'by_age',),

@@ -27,7 +27,6 @@ def ShowSplashScreen():
 	showSeconds = 2.5
 	frame = wx.SplashScreen(bitmap, wx.SPLASH_CENTRE_ON_SCREEN|wx.SPLASH_TIMEOUT, int(showSeconds*1000), None)
 	
-	
 class ErrorDialog( wx.Dialog ):
 	def __init__( self, parent, errors, id=wx.ID_ANY, title='Errors', size=(800,600) ):
 		wx.Dialog.__init__( self, parent, id, title, size=size, style=wx.RESIZE_BORDER|wx.MAXIMIZE_BOX|wx.MINIMIZE_BOX )
@@ -77,7 +76,17 @@ class MainWin( wx.Frame ):
 		
 		horizontalControlSizer = wx.BoxSizer( wx.HORIZONTAL )
 		
+		#-------------------------------------------------------------------------------------------
 		verticalControlSizer = wx.BoxSizer( wx.VERTICAL )
+		
+		self.useUciCodeCB = wx.CheckBox( self, label=_("Use UCI Code (assume correct)") )
+		self.useUciCodeCB.SetValue( True )
+		verticalControlSizer.Add( self.useUciCodeCB, flag=wx.ALL, border=4 )
+
+		self.useLicenseCB = wx.CheckBox( self, label=_("Use License Code (assume correct)") )
+		self.useLicenseCB.SetValue( True )
+		verticalControlSizer.Add( self.useLicenseCB, flag=wx.ALL, border=4 )
+
 		self.soundalikeCB = wx.CheckBox( self, label=_("Match misspelled names with Sound-Alike") )
 		self.soundalikeCB.SetValue( True )
 		verticalControlSizer.Add( self.soundalikeCB, flag=wx.ALL, border=4 )
@@ -245,7 +254,13 @@ class MainWin( wx.Frame ):
 		
 	def getIsSoundalike( self ):
 		return self.soundalikeCB.GetValue()
-		
+	
+	def getUseUciCode( self ):
+		return self.useUciCodeCB.GetValue()
+	
+	def getUseLicense( self ):
+		return self.useLicenseCB.GetValue()
+	
 	def getOutputExcelName( self ):
 		fname_base, fname_suffix = os.path.splitext(self.fname)
 		fname_excel = '{}_{}{}'.format(fname_base, 'Callups' if self.getIsCallup() else 'Seeding', '.xlsx')
@@ -329,6 +344,8 @@ class MainWin( wx.Frame ):
 			self.registration_headers, self.callup_headers, self.callup_results, self.sources, self.errors = GetCallups(
 				self.fname,
 				soundalike = self.getIsSoundalike(),
+				useUciCode = self.getUseUciCode(),
+				useLicense = self.getUseLicense(),
 				callbackfunc = self.updateSourceList,
 				callbackupdate = self.callbackUpdate,
 			)
