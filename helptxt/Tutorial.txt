@@ -18,14 +18,14 @@ If you are doing seeding for a time trial, you want the highest ranked rider to 
 __CallupSeedingMgr__ handles any number of callup/seeding criteria.  In this example, we are going to use 3 criteria to control the callups:
 
 1. by __UCI Points__
-1. if tied (or don't have any), then by __National Points__
-1. if tied (or don't have any), then by __Results from Last Year's Race__
+1. if no UCI Points, then by __National Points__
+1. if no National Points, then by __Results from Last Year's Race__
 
 The goal is to get a sequence by driven by these criteria.  For riders with no criteria, we want them in random order.
 
-CallupSeedingMgr puts riders with no criteria in random order, however, it always puts them in the __same__ random order each time.  If you run CallupSeedingMgr on the same input, you will get the same output.
+Although CallupSeedingMgr randomizes the order of riders without criteria, it always puts them in the __same__ random order each time.  If you run CallupSeedingMgr on the same input, you will get the same output.
 
-Of course, in your own race you will configure a spreadsheet with your own data.
+In your own race you will configure a spreadsheet with your own data.
 
 In a nutshell, __CallupSeedintMgr__ does the following:
 
@@ -36,7 +36,9 @@ In a nutshell, __CallupSeedintMgr__ does the following:
             If unsuccessful, append an appropriate default value (zero points or infinite position)
     Sort all the rider vectors
 
-Vectors are sorted in [Lexographic Order](http://en.wikipedia.org/wiki/Lexicographical_order) for callups, reversed for seeding.
+Vectors are sorted in [Lexographic Order](http://en.wikipedia.org/wiki/Lexicographical_order) for callups, reversed order for seeding.
+
+A tie on points is broken in the same order the points appear in the input.  For example, if two riders both have 198 UCI Points, the rider appearing first on the UCI Points list will appear first in the CallupSeedingMgr output.  CallupSeedingMgr assumes that if there were other criteria used to break the tie (for example, the last best result) it is reflected in the order of the ranking criteria.
 
 # Structure of the Input Excel File
 

@@ -246,9 +246,9 @@ class Result( object ):
 	
 	def get_key( self ):
 		if self.cmp_policy == self.ByPoints:
-			return -(self.points or 0)
+			return (-(self.points or 0), self.row)
 		elif self.cmp_policy == self.ByPosition:
-			return self.position or sys.maxint
+			return (self.position or sys.maxint, self.row)
 		assert False, 'Invalid cmp_policy'
 		
 	def get_value( self ):
@@ -283,7 +283,7 @@ class FindResult( object ):
 	def get_key( self ):
 		if len(self.matches) == 1:
 			return self.matches[0].get_key()
-		return 0 if self.source.cmp_policy == Result.ByPoints else sys.maxint
+		return (0, sys.maxint) if self.source.cmp_policy == Result.ByPoints else (sys.maxint, sys.maxint)
 			
 	def get_value( self ):
 		if not self.matches:
