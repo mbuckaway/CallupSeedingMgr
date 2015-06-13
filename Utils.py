@@ -23,8 +23,10 @@ except ImportError:
 import os
 import re
 import sys
-import unicodedata
 import platform
+import datetime
+import traceback
+import unicodedata
 
 def removeDiacritic(input):
 	'''

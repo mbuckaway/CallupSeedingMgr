@@ -231,14 +231,8 @@ class MainWin( wx.Frame ):
 		if status == v.NoMatch:
 			return
 		
-		message = u'{}\n\n{}:\n{}\n\n{}:\n{}\n\n{}'.format(
-			u'{}: "{}"'.format( _('Soundalike match in sheet') if status == v.SuccessSoundalike else
-								_('Multiple matches in sheet') if status == v.MultiMatch else
-								_('Match Success in sheet') , v.source.sheet_name),
-			_('Registration'),
-			v.search.as_str(),
-			_('Matches'),
-			u'\n'.join( u'{} {}: {}'.format(_('Row'), r.row, r.as_str()) for r in v.matches),
+		message = u'{}\n\n{}'.format(
+			v.get_message(),
 			_('Make changes in the Spreadsheet (if necessary), then press "Update" to refresh the screen.'),
 		)
 		Utils.MessageOK( self, message, _('Soundalike Match') if status == v.SuccessSoundalike else
@@ -330,7 +324,7 @@ class MainWin( wx.Frame ):
 			with open(self.fname, 'rb') as f:
 				pass
 		except Exception as e:
-			Utils.MessageOK( self, u'{}:\n\n    {}\n\n{}'.format( _('Cannot Open Excel file'), fname, e), _('Cannot Open Excel File') )
+			Utils.MessageOK( self, u'{}:\n\n    {}\n\n{}'.format( _('Cannot Open Excel file'), self.fname, e), _('Cannot Open Excel File') )
 			self.setUpdated( False )
 			return
 		
@@ -394,6 +388,7 @@ class MainWin( wx.Frame ):
 				exclude_unranked=self.excludeUnrankedCB.GetValue(),
 			)
 		except Exception as e:
+			traceback.print_exc()
 			Utils.MessageOK( self,
 				u'{}: "{}"\n\n{}\n\n"{}"'.format(
 						_("Write Failed"),

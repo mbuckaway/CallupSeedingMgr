@@ -14,7 +14,6 @@ def CallupResultsToExcel( fname_excel, registration_headers, callup_headers, cal
 	
 	if not is_callup:
 		callup_results = reversed( callup_results )
-	
 
 	wb = xlsxwriter.Workbook( fname_excel )
 	ws = wb.add_worksheet('Callups' if is_callup is True else 'Seeding')
@@ -48,20 +47,25 @@ def CallupResultsToExcel( fname_excel, registration_headers, callup_headers, cal
 	rowNum += 1
 		
 	for row in callup_results:
-		for c, v in enumerate(row):
+		for c, value in enumerate(row):
 			if callup_headers[c] in ignore_headers:
 				continue
 			
 			try:
-				v = v.get_value()
+				v = value.get_value()
+				findResult = value
 			except AttributeError:
-				pass
+				v = value
+				findResult = None
 			
 			col = header_col[callup_headers[c]]
 			if isinstance(v, datetime.date):
 				fit_sheet.write( rowNum, col, v, date_format )
 			else:
 				fit_sheet.write( rowNum, col, unicode(v).upper() if c == last_name_col else v )
+			
+			if findResult and findResult.get_status() != findResult.NoMatch:
+				ws.write_comment( rowNum, col, findResult.get_message(), {'width': 200, 'height': 200} )
 		rowNum += 1
 	
 	wb.close()

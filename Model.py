@@ -304,6 +304,22 @@ class FindResult( object ):
 	def __repr__( self ):
 		return unicode(self.get_value())
 		
+	def get_message( self ):
+		matchName = {
+			self.Success:			_('Success'),
+			self.SuccessSoundalike: _('Soundalike Match'),
+			self.MultiMatch:		_('Multiple Matches'),
+			self.NoMatch:			_('No Match'),
+		}[self.get_status()]
+		matches = u'\n'.join( u', '.join(r.as_list()) for r in self.matches )
+		
+		message = u'{matchName}: "{sheet_name}"\n\n{registration}:\n{registrationData}\n\n{matches}:\n{matchesData}'.format(
+			matchName=matchName, sheet_name=self.source.sheet_name,
+			registration=_('Registration'), registrationData=u', '.join(self.search.as_list()),
+			matches=_('Matches'), matchesData=matches,
+		)
+		return message
+		
 def validate_uci_code( dCur, uci_code ):
 	if not uci_code:
 		raise ValueError( u'uci_code missing' )
