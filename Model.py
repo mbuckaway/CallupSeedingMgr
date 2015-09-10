@@ -6,6 +6,7 @@ import six
 import datetime
 import iso3166
 import random
+import traceback
 from metaphone import doublemetaphone
 from Excel import GetExcelReader
 from CountryIOC import uci_country_codes, uci_country_codes_set
@@ -37,6 +38,53 @@ def normalize_name( s ):
 	
 def normalize_name_lookup( s ):
 	return Utils.removeDiacritic(normalize_name(s)).upper()
+
+today = datetime.date.today()
+earliest_year = (today - datetime.timedelta( days=106*365 )).year
+latest_year = (today - datetime.timedelta( days=7*365 )).year
+invalid_date_of_birth = datetime.date(1900, 1, 1)
+def date_from_value( s ):
+	if isinstance(s, datetime.date):
+		return s
+	if isinstance(s, datetime.datetime):
+		return s.date()
+	
+	if isinstance(s, (float, int)):
+		return datetime.date( *(xldate_as_tuple(s, datemode)[:3]) )
+		
+	try:
+		s = s.replace('-', '/')
+	except:
+		pass
+	
+	# Start with month, day, year format.
+	try:
+		mm, dd, yy = [int(v.strip()) for v in s.split('/')]
+	except:
+		return invalid_date_of_birth
+	
+	if mm > 1900:
+		# Switch to yy, mm, dd format.
+		yy, mm, dd = mm, dd, yy
+	
+	# Correct for 2-digit year.
+	for century in [0, 1900, 2000, 2100]:
+		if earliest_year <= yy + century <= latest_year:
+			yy += century
+			break
+	
+	# Check if day and month are reversed.
+	if mm > 12:
+		dd, mm = mm, dd
+		
+	assert 1900 <= yy
+		
+	try:
+		return datetime.date( year=yy, month=mm, day=dd )
+	except Exception as e:
+		print yy, mm, dd
+		raise e
+		
 
 class Result( object ):
 	ByPoints, ByPosition = (0, 1)
@@ -117,7 +165,10 @@ class Result( object ):
 			
 		for f in self.Fields:
 			setattr( self, f, kwargs.get(f, None) )
-			
+		
+		if self.date_of_birth is not None:
+			self.date_of_birth = date_from_value( self.date_of_birth )
+		
 		if self.license is not None:
 			self.license = unicode(self.license).strip()
 			
@@ -333,15 +384,15 @@ def validate_uci_code( dCur, uci_code ):
 		raise ValueError( u'uci_code contains unknown nation {}'.format(uci_code) )
 	
 	try:
-		year = int(year, 10)
+		year = int(year)
 	except ValueError:
 		raise ValueError( u'uci_code contains invalid year: {}'.format(uci_code) )
 	try:
-		month = int(month, 10)
+		month = int(month)
 	except ValueError:
 		raise ValueError( u'uci_code contains invalid month: {}'.format(uci_code) )		
 	try:
-		day = int(day, 10)
+		day = int(day)
 	except ValueError:
 		raise ValueError( u'uci_code contains invalid day: {}'.format(uci_code) )
 	
@@ -443,6 +494,7 @@ class Source( object ):
 				result = Result( **row_fields )
 			except Exception as e:
 				errors.append( u'{} - row {} - {}'.format(self.sheet_name, row_number+1, e) )
+				traceback.print_exc()
 				continue
 			
 			result.row_number = row_number

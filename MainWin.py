@@ -257,7 +257,7 @@ class MainWin( wx.Frame ):
 	
 	def getOutputExcelName( self ):
 		fname_base, fname_suffix = os.path.splitext(self.fname)
-		fname_excel = '{}_{}{}'.format(fname_base, 'Callups' if self.getIsCallup() else 'Seeding', '.xlsx')
+		fname_excel = '{}_{}{}'.format(fname_base, 'Sequence', '.xlsx')
 		return fname_excel
 	
 	def doChangeCallback( self, event ):

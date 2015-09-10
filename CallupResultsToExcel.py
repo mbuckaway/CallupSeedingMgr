@@ -33,20 +33,22 @@ def CallupResultsToExcel( fname_excel, registration_headers, callup_headers, cal
 			ignore_headers.add( 'nation_code' )
 			
 	header_col = {}
-	col_cur = 0
+	col_cur = 1
 	for v in callup_headers:
 		if v in ignore_headers:
 			continue
 		header_col[v] = col_cur
 		col_cur += 1
-			
+	
+	fit_sheet.write( rowNum, 0, 'Seq', bold_format, bold=True )
 	for v in callup_headers:
 		if v in ignore_headers:
 			continue
 		fit_sheet.write( rowNum, header_col[v], make_title(v), bold_format, bold=True )
 	rowNum += 1
 		
-	for row in callup_results:
+	for i, row in enumerate(callup_results, 1):
+		fit_sheet.write( rowNum, 0, i )
 		for c, value in enumerate(row):
 			if callup_headers[c] in ignore_headers:
 				continue
@@ -65,7 +67,7 @@ def CallupResultsToExcel( fname_excel, registration_headers, callup_headers, cal
 				fit_sheet.write( rowNum, col, unicode(v).upper() if c == last_name_col else v )
 			
 			if findResult and findResult.get_status() != findResult.NoMatch:
-				ws.write_comment( rowNum, col, findResult.get_message(), {'width': 200, 'height': 200} )
+				ws.write_comment( rowNum, col, findResult.get_message(), {'width': 200, 'height': 400} )
 		rowNum += 1
 	
 	wb.close()

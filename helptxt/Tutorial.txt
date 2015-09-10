@@ -36,7 +36,7 @@ In a nutshell, __CallupSeedintMgr__ does the following:
             If unsuccessful, append an appropriate default value (zero points or infinite position)
     Sort all the rider vectors
 
-Vectors are sorted in [Lexographic Order](http://en.wikipedia.org/wiki/Lexicographical_order) for callups, reversed order for seeding.
+Vectors are sorted in [Lexographic Order](http://en.wikipedia.org/wiki/Lexicographical_order) for callups, and in reversed order for seeding.
 
 A tie on points is broken in the same order the points appear in the input.  For example, if two riders both have 198 UCI Points, the rider appearing first on the UCI Points list will appear first in the CallupSeedingMgr output.  CallupSeedingMgr assumes that if there were other criteria used to break the tie (for example, the last best result) it is reflected in the order of the ranking criteria.
 

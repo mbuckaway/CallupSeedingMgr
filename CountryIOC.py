@@ -273,3 +273,5 @@ for line in country_ioc.split('\n'):
 	uci_country_codes[fields[0].upper()] = fields[2]
 	
 uci_country_codes_set = set( n.upper() for n in uci_country_codes.itervalues() )
+
+country_ioc = None
