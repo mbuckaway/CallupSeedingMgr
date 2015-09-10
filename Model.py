@@ -168,6 +168,8 @@ class Result( object ):
 		
 		if self.date_of_birth is not None:
 			self.date_of_birth = date_from_value( self.date_of_birth )
+			if self.date_of_birth == invalid_date_of_birth:
+				self.date_of_birth = None
 		
 		if self.license is not None:
 			self.license = unicode(self.license).strip()
