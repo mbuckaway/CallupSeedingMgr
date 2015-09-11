@@ -7,7 +7,8 @@ import Model
 from FitSheetWrapper import FitSheetWrapper
 from GetCallups import make_title
 
-def CallupResultsToExcel( fname_excel, registration_headers, callup_headers, callup_results, is_callup=True, top_riders=sys.maxint, exclude_unranked=False ):
+def CallupResultsToExcel( fname_excel, registration_headers, callup_headers, callup_results, is_callup=True, top_riders=sys.maxint,
+		exclude_unranked=False, excel_comments=True ):
 	callup_results = callup_results[:top_riders]
 	if exclude_unranked:
 		callup_results = [r for r in callup_results if any(r[k] for k in xrange(len(registration_headers), len(callup_headers)))]
@@ -66,7 +67,7 @@ def CallupResultsToExcel( fname_excel, registration_headers, callup_headers, cal
 			else:
 				fit_sheet.write( rowNum, col, unicode(v).upper() if c == last_name_col else v )
 			
-			if findResult and findResult.get_status() != findResult.NoMatch:
+			if excel_comments and findResult and findResult.get_status() != findResult.NoMatch:
 				ws.write_comment( rowNum, col, findResult.get_message(), {'width': 200, 'height': 400} )
 		rowNum += 1
 	

@@ -153,6 +153,9 @@ class MainWin( wx.Frame ):
 		hs = wx.BoxSizer( wx.HORIZONTAL )
 		self.excludeUnrankedCB = wx.CheckBox( self, label=_("Exclude riders with no ranking info") )
 		hs.Add( self.excludeUnrankedCB, flag=wx.ALL|wx.ALIGN_CENTRE_VERTICAL, border=4 )
+		self.excelCommentsCB = wx.CheckBox( self, label=_("Include comments in Excel file") )
+		self.excelCommentsCB.SetValue( True )
+		hs.Add( self.excelCommentsCB, flag=wx.ALL|wx.ALIGN_CENTRE_VERTICAL, border=4 )
 		hs.AddSpacer( 24 )
 		hs.Add( wx.StaticText(self, label=_("Output:") ), flag=wx.ALL|wx.ALIGN_CENTRE_VERTICAL, border=4 )
 		self.topRiders = wx.Choice( self, choices=[_('All Riders'), _('Top 5'), _('Top 10'), _('Top 15'), _('Top 20'), _('Top 25')] )
@@ -386,6 +389,7 @@ class MainWin( wx.Frame ):
 				is_callup=self.getIsCallup(),
 				top_riders=self.getTopRiders(),
 				exclude_unranked=self.excludeUnrankedCB.GetValue(),
+				excel_comments=self.excelCommentsCB.GetValue(),
 			)
 		except Exception as e:
 			traceback.print_exc()
