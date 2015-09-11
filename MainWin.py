@@ -154,7 +154,6 @@ class MainWin( wx.Frame ):
 		self.excludeUnrankedCB = wx.CheckBox( self, label=_("Exclude riders with no ranking info") )
 		hs.Add( self.excludeUnrankedCB, flag=wx.ALL|wx.ALIGN_CENTRE_VERTICAL, border=4 )
 		self.excelCommentsCB = wx.CheckBox( self, label=_("Include comments in Excel file") )
-		self.excelCommentsCB.SetValue( True )
 		hs.Add( self.excelCommentsCB, flag=wx.ALL|wx.ALIGN_CENTRE_VERTICAL, border=4 )
 		hs.AddSpacer( 24 )
 		hs.Add( wx.StaticText(self, label=_("Output:") ), flag=wx.ALL|wx.ALIGN_CENTRE_VERTICAL, border=4 )
