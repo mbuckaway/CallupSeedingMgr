@@ -3,6 +3,8 @@ import py2exe
 import os
 import shutil
 import zipfile
+import datetime
+import subprocess
 
 if os.path.exists('build'):
 	shutil.rmtree( 'build' )
@@ -12,23 +14,27 @@ if os.path.exists('build'):
 from helptxt.compile import CompileHelp
 CompileHelp( 'helptxt' )
 
-distDir = 'dist'
+distDir = r'dist\CallupSeedingMgr'
+distDirParent = os.path.dirname(distDir)
+if os.path.exists(distDirParent):
+	shutil.rmtree( distDirParent )
+if not os.path.exists( distDirParent ):
+	os.makedirs( distDirParent )
 
-# Cleanup existing dll, pyd and exe files.  The old ones may not be needed, so it is best to clean these up.
-for f in os.listdir(distDir):
-	if f.endswith('.dll') or f.endswith('.pyd') or f.endswith('.exe'):
-		fname = os.path.join(distDir, f)
-		print 'deleting:', fname
-		os.remove( fname )
-		
-setup( windows=
-			[
-				{
-					'script': 'CallupSeedingMgr.pyw',
-					'icon_resources': [(1, r'images\CallupSeedingMgr.ico')]
-				}
-			]
-	 )
+subprocess.call( [
+	'pyinstaller',
+	
+	'CallupSeedingMgr.pyw',
+	'--icon=images\CallupSeedingMgr.ico',
+	'--clean',
+	'--windowed',
+	'--noconfirm',
+	
+	'--exclude-module=tcl',
+	'--exclude-module=tk',
+	'--exclude-module=Tkinter',
+	'--exclude-module=_tkinter',
+] )
 
 # Copy additional dlls to distribution folder.
 wxHome = r'C:\Python27\Lib\site-packages\wx-2.8-msw-ansi\wx'
@@ -63,6 +69,24 @@ for drive in ['C', 'D']:
 	if os.path.exists( innoTest ):
 		inno = innoTest
 		break
+
+from Version import AppVerName
+def make_inno_version():
+	setup = {
+		'AppName':				AppVerName.split()[0],
+		'AppPublisher':			"Edward Sitarski",
+		'AppContact':			"Edward Sitarski",
+		'AppCopyright':			"Copyright (C) 2004-{} Edward Sitarski".format(datetime.date.today().year),
+		'AppVerName':			AppVerName,
+		'AppPublisherURL':		"http://www.sites.google.com/site/crossmgrsoftware/",
+		'AppUpdatesURL':		"http://www.sites.google.com/site/crossmgrsoftware/downloads/",
+		'VersionInfoVersion':	AppVerName.split()[1],
+	}
+	with open('inno_setup.txt', 'w') as f:
+		for k, v in setup.iteritems():
+			f.write( '{}={}\n'.format(k,v) )
+make_inno_version()
+
 cmd = '"' + inno + '" ' + 'CallupSeedingMgr.iss'
 print cmd
 os.system( cmd )
@@ -96,5 +120,5 @@ z.write( newExeName )
 z.close()
 print 'executable compressed.'
 
-shutil.copy( newExeName, r"c:\GoogleDrive\Downloads\Windows\CallupSeedingMgr"  )
+shutil.copy( newZipName, r"c:\GoogleDrive\Downloads\Windows\CallupSeedingMgr"  )
 

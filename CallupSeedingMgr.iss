@@ -1,15 +1,14 @@
 ; -- CallupSeedingMgr.iss --
 
 [Setup]
-AppName=CallupSeedingMgr
-#include "Version.py"
+#include "inno_setup.txt"
 DefaultDirName={pf}\CallupSeedingMgr
 DefaultGroupName=CallupSeedingMgr
 UninstallDisplayIcon={app}\CallupSeedingMgr.exe
 Compression=lzma2/ultra64
 SolidCompression=yes
-SourceDir=dist
-OutputDir=..\install
+SourceDir=dist\CallupSeedingMgr
+OutputDir=..\..\install
 OutputBaseFilename=CallupSeedingMgr_Setup
 ChangesAssociations=yes
 

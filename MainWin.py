@@ -259,7 +259,7 @@ class MainWin( wx.Frame ):
 	
 	def getOutputExcelName( self ):
 		fname_base, fname_suffix = os.path.splitext(self.fname)
-		fname_excel = '{}_{}{}'.format(fname_base, 'Sequence', '.xlsx')
+		fname_excel = '{}_{}_{}{}'.format(fname_base, 'Sequence', datetime.datetime.now().strftime('%Y-%m-%d-%H%M%S'), '.xlsx')
 		return fname_excel
 	
 	def doChangeCallback( self, event ):
