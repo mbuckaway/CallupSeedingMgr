@@ -99,6 +99,7 @@ imageFolder = os.path.join(dirName, 'images')
 htmlFolder = os.path.join(dirName, 'html')
 htmlDocFolder = os.path.join(dirName, 'htmldoc')
 
+import webbrowser
 if sys.platform == 'darwin':
 	webbrowser.register("chrome", None, webbrowser.MacOSXOSAScript('chrome'), -1)
 
