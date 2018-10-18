@@ -10,24 +10,25 @@ from FitSheetWrapper import FitSheetWrapper
 from Model import Source, Result
 from GetCallups import make_title
 
-def get_license():
+def random_license():
 	return u''.join( 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[random.randint(0,25)] for i in xrange(6) )
+
+def random_uci_id():
+	id = '9{}'.format(''.join( random.choice('0123456789') for i in xrange(8)) )
+	id += '{:02d}'.format( int(id) % 97 )
+	return id
 
 def MakeExampleExcel( include_uci_points=True, include_national_points=True, include_previous_result=True ):
 	Year = datetime.date.today().year
-	YearAdjust = Year - 2014
+	YearAdjust = Year - 2017
 	
-	fname = os.path.join(Utils.getImageFolder(), 'UCI_Points.xlsx')
+	fname = os.path.join(Utils.getImageFolder(), 'IndividualRanking.xlsx')
 	reader = GetExcelReader( fname )
-	uci_points = Source( fname, 'UCI Points' )
+	uci_points = Source( fname, 'Individual' )
 	uci_points.read( reader )
 	for r in uci_points.results:
 		r.age += YearAdjust
-		r.uci_code = u'{}{}'.format(
-						r.nation_code,
-						(datetime.date(Year-r.age, 1, 1) + datetime.timedelta(days=random.randint(0,364))).strftime('%Y%m%d'),
-					)
-		r.license = get_license()
+		r.license = random_license()
 
 	uci_sample = random.sample( uci_points.results, 20 )
 	
@@ -39,8 +40,8 @@ def MakeExampleExcel( include_uci_points=True, include_national_points=True, inc
 		other_sample.append( Result(
 				first_name=common_first_names[i%len(common_first_names)],
 				last_name=common_last_names[i%len(common_last_names)],
-				uci_code=u'FRA' + random.choice(uci_points.results).uci_code[3:],
-				license=get_license(),
+				uci_id=random_uci_id(),
+				license=random_license(),
 			)
 		)
 		
@@ -58,7 +59,7 @@ def MakeExampleExcel( include_uci_points=True, include_national_points=True, inc
 	ws = wb.add_worksheet('Registration')
 	fit_sheet = FitSheetWrapper( ws )
 	
-	fields = ['bib', 'first_name', 'last_name', 'uci_code', 'license']
+	fields = ['bib', 'first_name', 'last_name', 'uci_id', 'license']
 	for c, field in enumerate(fields):
 		fit_sheet.write( 0, c, make_title(field) )
 	for r, result in enumerate(registration):
@@ -66,19 +67,20 @@ def MakeExampleExcel( include_uci_points=True, include_national_points=True, inc
 			fit_sheet.write( r+1, c, getattr(result, field) )
 	
 	if include_uci_points:
-		ws = wb.add_worksheet('UCI Points')
+		ws = wb.add_worksheet('Individual')
 		fit_sheet = FitSheetWrapper( ws )
-		for c, header in enumerate('Rank	Name	Nation	Age*	Points'.split()):
+		for c, header in enumerate(['Rank', 'UCI ID', 'Name', 'Team Code', 'Age', 'Points']):
 			fit_sheet.write( 0, c, header )
 		for r, result in enumerate(uci_points.results):
 			row = r + 1
-			fit_sheet.write( row, 0, u'{} ({})'.format(row, row) )
-			fit_sheet.write( row, 1, u'{} {}'.format(result.first_name, result.last_name.upper()) )
-			fit_sheet.write( row, 2, result.nation )
-			fit_sheet.write( row, 3, result.age )
-			fit_sheet.write( row, 4, result.points )
+			fit_sheet.write( row, 0, u'{}'.format(row) )
+			fit_sheet.write( row, 1, result.uci_id if result.uci_id else u'' )
+			fit_sheet.write( row, 2, u'{} {}'.format(result.last_name.upper(), result.first_name) )
+			fit_sheet.write( row, 3, result.team_code if result.team_code else u'' )
+			fit_sheet.write( row, 4, result.age )
+			fit_sheet.write( row, 5, result.points )
 
-	eligible_for_points = other_sample + [rr for rr in uci_points.results if rr.uci_code[:3] == 'FRA']
+	eligible_for_points = other_sample + [rr for rr in uci_points.results if rr.nation_code == 'FRA']
 
 	if include_national_points:
 		ws = wb.add_worksheet('National Points')
@@ -96,14 +98,15 @@ def MakeExampleExcel( include_uci_points=True, include_national_points=True, inc
 	if include_previous_result:
 		ws = wb.add_worksheet( '{} Result'.format(Year-1) )
 		fit_sheet = FitSheetWrapper( ws )
-		for c, header in enumerate(['Pos', 'First Name', 'Last Name', 'License']):
+		for c, header in enumerate(['Pos', 'First Name', 'Last Name', 'UCI ID', 'License']):
 			fit_sheet.write( 0, c, header )
 		for r, result in enumerate(random.sample(eligible_for_points, min(len(eligible_for_points),35))):
 			row = r + 1
 			fit_sheet.write( row, 0, row )
 			fit_sheet.write( row, 1, result.first_name )
 			fit_sheet.write( row, 2, result.last_name )
-			fit_sheet.write( row, 3, result.license )
+			fit_sheet.write( row, 3, result.uci_id )
+			fit_sheet.write( row, 4, result.license )
 
 	wb.close()
 	

@@ -14,13 +14,13 @@ def CallupResultsToGrid( grid, registration_headers, callup_headers, callup_resu
 		callup_results = list(reversed(callup_results))
 	
 	last_name_col = None
+	uci_id_col = None
 	ignore_headers = set(['age'])
 	for col, v in enumerate(callup_headers):
 		if v == 'last_name':
 			last_name_col = col
-		if v == 'uci_code':
-			ignore_headers.add( 'date_of_birth' )
-			ignore_headers.add( 'nation_code' )
+		elif v == 'uci_id':
+			uci_id_col = col
 	
 	header_col = {}
 	col_cur = 0
@@ -56,6 +56,9 @@ def CallupResultsToGrid( grid, registration_headers, callup_headers, callup_resu
 	successSoundalikeColour = wx.Colour(255, 255, 0)
 	multiMatchColour = wx.Colour(255,140,0)
 	
+	characterMatchFail = wx.Colour(255, 255, 0)
+	soundalikeMatchFail = wx.Colour(255,140,0)
+	
 	len_callup_results = len(callup_results)
 	for row, result in enumerate(callup_results):
 		for c, v in enumerate(result):
@@ -71,6 +74,12 @@ def CallupResultsToGrid( grid, registration_headers, callup_headers, callup_resu
 					colour = successSoundalikeColour
 				elif s == v.MultiMatch:
 					colour = multiMatchColour
+				if s == v.Success:
+					s = v.get_name_status()
+					if s == 1:
+						colour = characterMatchFail
+					elif s == 2:
+						colour = soundalikeMatchFail
 			except AttributeError as e:
 				pass
 			grid.SetCellBackgroundColour( row, col, colour )
@@ -87,7 +96,13 @@ def CallupResultsToGrid( grid, registration_headers, callup_headers, callup_resu
 			try:
 				grid.SetCellValue( row, col, u'{:g}'.format(v) )
 			except ValueError:
-				grid.SetCellValue( row, col, unicode(v).upper() if c == last_name_col else unicode(v) )
+				if c == last_name_col:
+					v = unicode(v).upper()
+				elif c == uci_id_col:
+					v = Model.format_uci_id( unicode(v) )
+				else:
+					v = unicode( v )
+				grid.SetCellValue( row, col, v )
 		
 		# Record the row index in a hidden column so we can recover the original results.
 		grid.SetCellValue( row, grid.GetNumberCols()-1, unicode(row if is_callup else len_callup_results - row - 1) )

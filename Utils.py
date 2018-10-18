@@ -26,6 +26,7 @@ import sys
 import platform
 import datetime
 import traceback
+import subprocess
 import unicodedata
 
 def removeDiacritic(input):
@@ -97,6 +98,18 @@ if os.path.basename(dirName) == 'library.zip':
 imageFolder = os.path.join(dirName, 'images')
 htmlFolder = os.path.join(dirName, 'html')
 htmlDocFolder = os.path.join(dirName, 'htmldoc')
+
+if sys.platform == 'darwin':
+	webbrowser.register("chrome", None, webbrowser.MacOSXOSAScript('chrome'), -1)
+
+def LaunchApplication( fnames ):
+	for fname in (fnames if isinstance(fnames, list) else [fnames]):
+		if os.name is 'nt':
+			subprocess.call(('cmd', '/C', 'start', '', fname))
+		elif sys.platform.startswith('darwin'):
+			subprocess.call(('open', fname))
+		else:
+			subprocess.call(('xdg-open', fname))	# Linux
 
 PlatformName = platform.system()
 def writeLog( message ):

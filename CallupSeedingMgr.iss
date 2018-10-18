@@ -2,10 +2,11 @@
 
 [Setup]
 #include "inno_setup.txt"
+ArchitecturesInstallIn64BitMode=x64
 DefaultDirName={pf}\CallupSeedingMgr
 DefaultGroupName=CallupSeedingMgr
 UninstallDisplayIcon={app}\CallupSeedingMgr.exe
-Compression=lzma2/ultra64
+Compression=lzma
 SolidCompression=yes
 SourceDir=dist\CallupSeedingMgr
 OutputDir=..\..\install

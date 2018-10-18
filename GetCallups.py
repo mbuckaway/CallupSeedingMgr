@@ -4,12 +4,13 @@ import sys
 import xlwt
 import datetime
 import Utils
+import random
 from Model import Source
 from Excel import GetExcelReader
 
 RegistrationSheet = 'Registration'
 
-def GetCallups( fname, soundalike=True, useUciCode=True, useLicense=True, callbackfunc=None, callbackupdate=None ):
+def GetCallups( fname, soundalike=True, useUciId=True, useLicense=True, callbackfunc=None, callbackupdate=None ):
 
 	if callbackupdate: callbackupdate( _('Reading spreadsheet...') )
 	reader = GetExcelReader( fname )
@@ -38,7 +39,7 @@ def GetCallups( fname, soundalike=True, useUciCode=True, useLicense=True, callba
 			continue
 		if callbackfunc: callbackfunc( sources + [registration], errors + [registrationErrors] )
 		if callbackupdate: callbackupdate( u'{}: {}'.format(_('Reading'), sheet) )
-		source = Source( fname, sheet, soundalike=soundalike, useUciCode=useUciCode, useLicense=useLicense )
+		source = Source( fname, sheet, soundalike=soundalike, useUciId=useUciId, useLicense=useLicense )
 		errs = source.read( reader )
 		sources.append( source )
 		errors.append( errs )
@@ -54,10 +55,43 @@ def GetCallups( fname, soundalike=True, useUciCode=True, useLicense=True, callba
 	for reg in registration.results:
 		reg.result_vector = [source.find(reg) for source in sources]
 	
-	callup_order = sorted( registration.results, key = lambda reg: tuple(r.get_key() for r in reg.result_vector) )
-	
+	callup_order = sorted(
+		registration.results,
+		key = lambda reg: tuple(r.get_sort_key() for r in reg.result_vector)
+	)
+
+	# Randomize riders with no criteria.
+	for i_random, reg in enumerate(callup_order):
+		if all( r.get_status() == r.NoMatch for r in reg.result_vector[:-1] ):
+			cu2 = callup_order[i_random:]
+			random.seed()
+			random.shuffle(cu2)
+			callup_order = callup_order[:i_random] + cu2
+			break
+		
 	callup_results = []
 	registration_headers = registration.get_ordered_fields()
+	
+	# Also add the team code if there is one.
+	if not 'team_code' in registration_headers:
+		for iSource, source in enumerate(sources):
+			if 'team_code' in source.get_ordered_fields():
+				try:
+					i_team = registration_headers.index('team')
+					registration_headers = tuple(
+						list(registration_headers[:i_team+1]) +
+						['team_code'] +
+						list(registration_headers[i_team+1:])
+					)
+				except ValueError:
+					registration_headers = tuple( list(registration_headers) + ['team_code'] )
+					
+				for reg in callup_order:
+					try:
+						reg.team_code = reg.result_vector[iSource].matches[0].team_code
+					except:
+						pass
+				break
 	
 	callup_headers = list(registration_headers) + [source.sheet_name for source in sources[:-1]]
 	
@@ -69,7 +103,7 @@ def GetCallups( fname, soundalike=True, useUciCode=True, useLicense=True, callba
 	return registration_headers, callup_headers, callup_results, sources, errors
 
 def make_title( title ):
-	return u' '.join( (w[:1].upper() + w[1:]).replace(u'Uci',u'UCI').replace('Of','of') for w in title.split(u'_') )
+	return u' '.join( (w[:1].upper() + w[1:]).replace(u'Uci',u'UCI').replace(u'Id',u'ID').replace('Of','of') for w in title.split(u'_') )
 
 if __name__ == '__main__':
 	def callbackupdate( msg ):

@@ -1,5 +1,5 @@
 
-python -mcompileall .
-python CallupSeedingMgrSetup.py py2exe
-
+python -mcompileall -l .
+rem python pypi.py
+python CallupSeedingMgrSetup.py
 SET /P RESULT=[Press any key to continue...]

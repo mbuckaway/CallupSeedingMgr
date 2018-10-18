@@ -1,4 +1,5 @@
 import wx
+import wx.adv
 from wx.lib.wordwrap import wordwrap
 import wx.lib.filebrowsebutton as filebrowse
 import sys
@@ -25,13 +26,13 @@ from Version import AppVerName
 def ShowSplashScreen():
 	bitmap = wx.Bitmap( os.path.join(Utils.getImageFolder(), 'CallupSeedingMgr.png'), wx.BITMAP_TYPE_PNG )
 	showSeconds = 2.5
-	frame = wx.SplashScreen(bitmap, wx.SPLASH_CENTRE_ON_SCREEN|wx.SPLASH_TIMEOUT, int(showSeconds*1000), None)
+	frame = wx.adv.SplashScreen(bitmap, wx.adv.SPLASH_CENTRE_ON_SCREEN|wx.adv.SPLASH_TIMEOUT, int(showSeconds*1000), None)
 	
 class ErrorDialog( wx.Dialog ):
 	def __init__( self, parent, errors, id=wx.ID_ANY, title='Errors', size=(800,600) ):
 		wx.Dialog.__init__( self, parent, id, title, size=size, style=wx.RESIZE_BORDER|wx.MAXIMIZE_BOX|wx.MINIMIZE_BOX )
 		bs = wx.BoxSizer( wx.VERTICAL )
-		self.text = wx.TextCtrl( self, style=wx.wx.TE_MULTILINE|wx.TE_READONLY|wx.TE_DONTWRAP )
+		self.text = wx.TextCtrl( self, style=wx.TE_MULTILINE|wx.TE_READONLY|wx.TE_DONTWRAP )
 		self.text.SetValue( u'\n'.join( u'{}'.format(e).replace( u"u'", u'' ).replace(u"'", u'') for e in errors ) )
 		bs.Add( self.text, 1, flag=wx.EXPAND|wx.ALL, border=4 )
 		self.okButton = wx.Button( self, id=wx.ID_OK )
@@ -79,9 +80,9 @@ class MainWin( wx.Frame ):
 		#-------------------------------------------------------------------------------------------
 		verticalControlSizer = wx.BoxSizer( wx.VERTICAL )
 		
-		self.useUciCodeCB = wx.CheckBox( self, label=_("Use UCI Code (assume no errors)") )
-		self.useUciCodeCB.SetValue( True )
-		verticalControlSizer.Add( self.useUciCodeCB, flag=wx.ALL, border=4 )
+		self.useUciIdCB = wx.CheckBox( self, label=_("Use UCI ID (assume no errors)") )
+		self.useUciIdCB.SetValue( True )
+		verticalControlSizer.Add( self.useUciIdCB, flag=wx.ALL, border=4 )
 
 		self.useLicenseCB = wx.CheckBox( self, label=_("Use License (assume no errors)") )
 		self.useLicenseCB.SetValue( True )
@@ -119,13 +120,13 @@ class MainWin( wx.Frame ):
 		self.tutorialButton = wx.Button( self, label=_('Help/Tutorial...') )
 		self.tutorialButton.Bind( wx.EVT_BUTTON, self.onTutorial )
 		vs.Add( self.tutorialButton, flag=wx.ALL, border=4 )
-		branding = wx.HyperlinkCtrl( self, id=wx.ID_ANY, label=u"Powered by CrossMgr", url=u"http://www.sites.google.com/site/crossmgrsoftware/" )
+		branding = wx.adv.HyperlinkCtrl( self, id=wx.ID_ANY, label=u"Powered by CrossMgr", url=u"http://www.sites.google.com/site/crossmgrsoftware/" )
 		vs.Add( branding, flag=wx.ALL, border=4 )
 		horizontalControlSizer.Add( vs )
 
 		inputBoxSizer.Add( horizontalControlSizer, flag=wx.EXPAND )
 		
-		self.sourceList = wx.ListCtrl( self, style=wx.LC_REPORT, size=(-1,160) )
+		self.sourceList = wx.ListCtrl( self, style=wx.LC_REPORT, size=(-1,100) )
 		inputBoxSizer.Add( self.sourceList, flag=wx.ALL|wx.EXPAND, border=4 )
 		self.sourceList.InsertColumn(0, "Sheet")
 		self.sourceList.InsertColumn(1, "Data Columns and Derived Information")
@@ -146,15 +147,14 @@ class MainWin( wx.Frame ):
 		self.grid.SetColLabelValue( 0, u'' )
 		self.grid.EnableDragRowSize( False )
 		self.grid.Bind( wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.onGridCellClick )
-			
+		#self.grid.Bind( wx.EVT_MOTION, self.onMouseOver )
+		
 		outputBox = wx.StaticBox( self, label=_('Output') )
 		outputBoxSizer = wx.StaticBoxSizer( outputBox, wx.VERTICAL )
 		
 		hs = wx.BoxSizer( wx.HORIZONTAL )
 		self.excludeUnrankedCB = wx.CheckBox( self, label=_("Exclude riders with no ranking info") )
 		hs.Add( self.excludeUnrankedCB, flag=wx.ALL|wx.ALIGN_CENTRE_VERTICAL, border=4 )
-		self.excelCommentsCB = wx.CheckBox( self, label=_("Include comments in Excel file") )
-		hs.Add( self.excelCommentsCB, flag=wx.ALL|wx.ALIGN_CENTRE_VERTICAL, border=4 )
 		hs.AddSpacer( 24 )
 		hs.Add( wx.StaticText(self, label=_("Output:") ), flag=wx.ALL|wx.ALIGN_CENTRE_VERTICAL, border=4 )
 		self.topRiders = wx.Choice( self, choices=[_('All Riders'), _('Top 5'), _('Top 10'), _('Top 15'), _('Top 20'), _('Top 25')] )
@@ -193,6 +193,7 @@ class MainWin( wx.Frame ):
 			return
 		try:
 			fname_excel = MakeExampleExcel()
+			self.fileBrowse.SetValue( fname_excel )
 		except Exception as e:
 			Utils.MessageOK( self, u'{}\n\n{}\n\n{}'.format(
 					u'Problem creating Excel sheet.',
@@ -200,13 +201,11 @@ class MainWin( wx.Frame ):
 					_('If the Excel file is open, please close it and try again')
 				)
 			)
-		self.fileBrowse.SetValue( fname_excel )
 		self.doUpdate( event )
-		webbrowser.open( fname_excel, new = 2, autoraise = True )
-		webbrowser.open( os.path.join(Utils.getHtmlDocFolder(), 'Tutorial.html'), new = 2, autoraise = True )
+		Utils.LaunchApplication( [fname_excel, os.path.join(Utils.getHtmlDocFolder(), 'Tutorial.html')] )
 	
 	def onItemSelected(self, event):
-		currentItem = event.m_itemIndex
+		currentItem = event.GetIndex()
 		errors = self.errors[(currentItem+len(self.errors)-1) % len(self.errors)]
 		if not errors:
 			return
@@ -215,6 +214,46 @@ class MainWin( wx.Frame ):
 		dialog.Destroy()
 		event.Skip()
 
+	def onMouseOver(self, event):
+		'''
+		Method to calculate where the mouse is pointing and
+		then set the tooltip dynamically.
+		'''
+
+		# Use CalcUnscrolledPosition() to get the mouse position
+		# within the
+		# entire grid including what's offscreen
+		x, y = self.grid_area.CalcUnscrolledPosition(event.GetX(),event.GetY())
+
+		coords = self.grid_area.XYToCell(x, y)
+		# you only need these if you need the value in the cell
+		row = coords[0]
+		col = coords[1]
+		iRecord = int( self.grid.GetCellValue(row, self.grid.GetNumberCols()-1) )
+		iSource = self.grid.GetNumberCols() - col
+		try:
+			v = self.callup_results[iRecord][-iSource+1]
+		except IndexError:
+			event.Skip()
+			return
+		
+		try:
+			status = v.get_status()
+		except AttributeError:
+			event.Skip()
+			return
+		
+		if status == v.NoMatch:
+			event.Skip()
+			return
+		
+		message = u'{}\n\n{}'.format(
+			v.get_message(),
+			_('Make changes in the Spreadsheet (if necessary), then press "Update" to refresh the screen.'),
+		)
+		event.GetEventObject().SetToolTipString(message)  
+		event.Skip()
+        
 	def onGridCellClick( self, event ):
 		row = event.GetRow()
 		col = event.GetCol()
@@ -251,15 +290,26 @@ class MainWin( wx.Frame ):
 	def getIsSoundalike( self ):
 		return self.soundalikeCB.GetValue()
 	
-	def getUseUciCode( self ):
-		return self.useUciCodeCB.GetValue()
+	def getUseUciId( self ):
+		return self.useUciIdCB.GetValue()
 	
 	def getUseLicense( self ):
 		return self.useLicenseCB.GetValue()
 	
 	def getOutputExcelName( self ):
-		fname_base, fname_suffix = os.path.splitext(self.fname)
-		fname_excel = '{}_{}_{}{}'.format(fname_base, 'Sequence', datetime.datetime.now().strftime('%Y-%m-%d-%H%M%S'), '.xlsx')
+		fname = os.path.abspath( self.fname )
+		dirname, basename = os.path.dirname( fname ), os.path.basename( fname )
+		fname_base, fname_suffix = os.path.splitext( basename )
+		dirchild = 'CallupsOutput' if self.getIsCallup() else 'SeedingOutput'
+		try:
+			os.makedirs( os.path.join(dirname, dirchild) )
+		except Exception as e:
+			pass
+		fname_excel = os.path.join(
+			dirname,
+			dirchild,
+			'{}{}{}'.format(fname_base, '_Callups' if self.getIsCallup() else '_Seeding', '.xlsx')
+		)
 		return fname_excel
 	
 	def doChangeCallback( self, event ):
@@ -286,15 +336,15 @@ class MainWin( wx.Frame ):
 			return
 			
 		def insert_source_info( source, errors, add_value_field=True ):
-			idx = self.sourceList.InsertStringItem( sys.maxint, source.sheet_name )
+			idx = self.sourceList.InsertItem( sys.maxint, source.sheet_name )
 			fields = source.get_ordered_fields()
 			if add_value_field and source.get_cmp_policy_field():
 				fields = [source.get_cmp_policy_field()] + list(fields)
-			self.sourceList.SetStringItem( idx, 1, u', '.join( make_title(f) for f in fields ) )
+			self.sourceList.SetItem( idx, 1, u', '.join( make_title(f) for f in fields ) )
 			match_fields = source.get_match_fields(sources[-1]) if source != sources[-1] else []
-			self.sourceList.SetStringItem( idx, 2, u', '.join( make_title(f) for f in match_fields ) )
-			self.sourceList.SetStringItem( idx, 3, unicode(len(source.results)) )
-			self.sourceList.SetStringItem( idx, 4, unicode(len(errors)) )
+			self.sourceList.SetItem( idx, 2, u', '.join( make_title(f) for f in match_fields ) )
+			self.sourceList.SetItem( idx, 3, unicode(len(source.results)) )
+			self.sourceList.SetItem( idx, 4, unicode(len(errors)) )
 		
 		insert_source_info( sources[-1], errors[-1], False )
 		for i, source in enumerate(sources[:-1]):
@@ -340,7 +390,7 @@ class MainWin( wx.Frame ):
 			self.registration_headers, self.callup_headers, self.callup_results, self.sources, self.errors = GetCallups(
 				self.fname,
 				soundalike = self.getIsSoundalike(),
-				useUciCode = self.getUseUciCode(),
+				useUciId = self.getUseUciId(),
 				useLicense = self.getUseLicense(),
 				callbackfunc = self.updateSourceList,
 				callbackupdate = self.callbackUpdate,
@@ -388,7 +438,6 @@ class MainWin( wx.Frame ):
 				is_callup=self.getIsCallup(),
 				top_riders=self.getTopRiders(),
 				exclude_unranked=self.excludeUnrankedCB.GetValue(),
-				excel_comments=self.excelCommentsCB.GetValue(),
 			)
 		except Exception as e:
 			traceback.print_exc()
