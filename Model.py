@@ -60,7 +60,7 @@ def parse_name( name ):
 			cLast = name[i]
 			break
 	
-	if cLast == cLast.lower():
+	if name[:2].upper() == name[:2]:
 		# Assume the name is of the form LAST NAME First Name.
 		# Find the last upper-case letter preceding a space.  Assume that is the last char in the last_name.
 		j = 0
@@ -76,7 +76,7 @@ def parse_name( name ):
 				j = i
 			i += 1
 		return name[j:], name[:j]
-	else:
+	elif name[-2:].upper() == name[-2:]:
 		# Assume the name field is of the form First Name LAST NAME
 		# Find the last lower-case letter preceding a space.  Assume that is the last char in the first_name.
 		j = 0
@@ -90,6 +90,13 @@ def parse_name( name ):
 				j = i
 			i += 1
 		return name[:j], name[j:]
+	else:
+		# Assume name is of form First Last
+		i = name.find( u' ' )
+		if i < 0:
+			return u'', name
+		else:
+			return name[:i], name[i:]
 	raise ValueError( u'invalid name: cannot parse first, last name: {}'.format( name ) )
 
 class Result( object ):
