@@ -42,6 +42,7 @@ def format_uci_id( uci_id ):
 def parse_name( name ):
 	name = normalize_name( name )
 	if ',' in name:
+		# Comma separated Last, First.
 		last_name, first_name = [n.strip() for n in name.split(',', 2)]
 		return first_name, last_name
 	
@@ -61,6 +62,7 @@ def parse_name( name ):
 			break
 	
 	if name[:2].upper() == name[:2]:
+		# First two characters are capitalized.
 		# Assume the name is of the form LAST NAME First Name.
 		# Find the last upper-case letter preceding a space.  Assume that is the last char in the last_name.
 		j = 0
@@ -77,6 +79,7 @@ def parse_name( name ):
 			i += 1
 		return name[j:], name[:j]
 	elif name[-2:].upper() == name[-2:]:
+		# Last two characters are capitalized.
 		# Assume the name field is of the form First Name LAST NAME
 		# Find the last lower-case letter preceding a space.  Assume that is the last char in the first_name.
 		j = 0
@@ -91,7 +94,7 @@ def parse_name( name ):
 			i += 1
 		return name[:j], name[j:]
 	else:
-		# Assume name is of form First Last
+		# Assume name is of form First Last where the first name is separated by the first space.
 		i = name.find( u' ' )
 		if i < 0:
 			return u'', name

@@ -24,6 +24,7 @@ def CallupResultsToExcel( fname_excel, registration_headers, callup_headers, cal
 	
 	rowNum = 0
 	last_name_col = None
+	uci_id_col = None
 	ignore_headers = set(['age'])
 	for col, v in enumerate(callup_headers):
 		if v == 'last_name':
