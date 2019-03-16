@@ -5,10 +5,10 @@ import Utils
 import Model
 from GetCallups import make_title
 
-def CallupResultsToGrid( grid, registration_headers, callup_headers, callup_results, is_callup=True, top_riders=sys.maxint, exclude_unranked=False ):
+def CallupResultsToGrid( grid, registration_headers, callup_headers, callup_results, is_callup=True, top_riders=999999, exclude_unranked=False ):
 	callup_results = callup_results[:top_riders]
 	if exclude_unranked:
-		callup_results = [r for r in callup_results if any(r[k] for k in xrange(len(registration_headers), len(callup_headers)))]
+		callup_results = [r for r in callup_results if any(r[k] for k in range(len(registration_headers), len(callup_headers)))]
 	
 	if not is_callup:
 		callup_results = list(reversed(callup_results))
@@ -97,19 +97,19 @@ def CallupResultsToGrid( grid, registration_headers, callup_headers, callup_resu
 				grid.SetCellValue( row, col, u'{:g}'.format(v) )
 			except ValueError:
 				if c == last_name_col:
-					v = unicode(v).upper()
+					v = u'{}'.format(v).upper()
 				elif c == uci_id_col:
-					v = Model.format_uci_id( unicode(v) )
+					v = Model.format_uci_id( u'{}'.format(v) )
 				else:
-					v = unicode( v )
+					v = u'{}'.format( v )
 				grid.SetCellValue( row, col, v )
 		
 		# Record the row index in a hidden column so we can recover the original results.
-		grid.SetCellValue( row, grid.GetNumberCols()-1, unicode(row if is_callup else len_callup_results - row - 1) )
+		grid.SetCellValue( row, grid.GetNumberCols()-1, u'{}'.format(row if is_callup else len_callup_results - row - 1) )
 	
 	if not is_callup:
-		for row in xrange(grid.GetNumberRows()):
-			grid.SetRowLabelValue( row, unicode(grid.GetNumberRows() - row) )
+		for row in range(grid.GetNumberRows()):
+			grid.SetRowLabelValue( row, u'{}'.format(grid.GetNumberRows() - row) )
 	
 	grid.AutoSize()
 	grid.SetColSize( grid.GetNumberCols()-1, 0 )

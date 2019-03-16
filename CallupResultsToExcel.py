@@ -7,10 +7,10 @@ import Model
 from FitSheetWrapper import FitSheetWrapper
 from GetCallups import make_title
 
-def CallupResultsToExcel( fname_excel, registration_headers, callup_headers, callup_results, is_callup=True, top_riders=sys.maxint, exclude_unranked=False ):
+def CallupResultsToExcel( fname_excel, registration_headers, callup_headers, callup_results, is_callup=True, top_riders=999999, exclude_unranked=False ):
 	callup_results = callup_results[:top_riders]
 	if exclude_unranked:
-		callup_results = [r for r in callup_results if any(r[k] for k in xrange(len(registration_headers), len(callup_headers)))]
+		callup_results = [r for r in callup_results if any(r[k] for k in range(len(registration_headers), len(callup_headers)))]
 	
 	if not is_callup:
 		callup_results = reversed( callup_results )
@@ -63,9 +63,9 @@ def CallupResultsToExcel( fname_excel, registration_headers, callup_headers, cal
 				fit_sheet.write( rowNum, col, v, date_format )
 			else:
 				if c == last_name_col:
-					v = unicode(v).upper()
+					v = u'{}'.format(v).upper()
 				elif c == uci_id_col:
-					v = Model.format_uci_id( unicode(v) )
+					v = Model.format_uci_id( u'{}'.format(v) )
 				fit_sheet.write( rowNum, col, v )
 			
 			if findResult and findResult.get_status() != findResult.NoMatch:

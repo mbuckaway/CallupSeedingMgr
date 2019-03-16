@@ -10,7 +10,11 @@ initTranslationCalled = False
 def initTranslation():
 	global initTranslationCalled
 	if not initTranslationCalled:
-		gettext.install(AppVerName.split(None, 1), './locale', unicode=True)
+		try:
+			gettext.install(AppVerName.split(None, 1), './locale', unicode=True)
+		except:
+			gettext.install(AppVerName.split(None, 1), './locale')
+			
 		initTranslationCalled = True
 		
 initTranslation()
@@ -23,6 +27,7 @@ except ImportError:
 import os
 import re
 import sys
+import six
 import platform
 import datetime
 import traceback
@@ -31,13 +36,13 @@ import unicodedata
 
 def removeDiacritic(input):
 	'''
-	Accept a unicode string, and return a normal string (bytes in Python 3)
+	Accept a unicode string, and return a normal string
 	without any diacritical marks.
 	'''
-	if type(input) == str:
-		return input
+	if isinstance(input, six.string_types):
+		return unicodedata.normalize('NFKD', input).encode('ASCII', 'ignore').decode()
 	else:
-		return unicodedata.normalize('NFKD', input).encode('ASCII', 'ignore')
+		return input
 	
 '''
 wx.ICON_EXCLAMATION	Shows an exclamation mark icon.
@@ -128,14 +133,14 @@ def disable_stdout_buffering():
 	sys.stdout.close()
 	os.dup2(temp_fd, fileno)
 	os.close(temp_fd)
-	sys.stdout = os.fdopen(fileno, "w", 0)
+	sys.stdout = os.fdopen(fileno, "w")
 		
 def logCall( f ):
 	def _getstr( x ):
 		return u'{}'.format(x) if not isinstance(x, wx.Object) else u'<<{}>>'.format(x.__class__.__name__)
 	
 	def new_f( *args, **kwargs ):
-		parameters = [_getstr(a) for a in args] + [ u'{}={}'.format( key, _getstr(value) ) for key, value in kwargs.iteritems() ]
+		parameters = [_getstr(a) for a in args] + [ u'{}={}'.format( key, _getstr(value) ) for key, value in kwargs.items() ]
 		writeLog( 'call: {}({})'.format(f.__name__, removeDiacritic(u', '.join(parameters))) )
 		return f( *args, **kwargs)
 	return new_f

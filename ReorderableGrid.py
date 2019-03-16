@@ -89,7 +89,7 @@ class ReorderableGridRowMixin( object ):
 		evt.Skip()
 
 	def copyRow( self, fromRow, toRow ):
-		for c in xrange(self.GetNumberCols()):
+		for c in range(self.GetNumberCols()):
 			self.SetCellValue( toRow, c, self.GetCellValue(fromRow, c) )
 			self.SetCellBackgroundColour( toRow, c, self.GetCellBackgroundColour(fromRow, c) )
 		
@@ -111,12 +111,12 @@ class ReorderableGridRowMixin( object ):
 			
 		self.DeselectRow( self._lastRow )
 		
-		lastRowSave = [self.GetCellValue(self._lastRow, c) for c in xrange(self.GetNumberCols())]
-		lastRowBackgroundColourSave = [self.GetCellBackgroundColour(self._lastRow, c) for c in xrange(self.GetNumberCols())]
-		direction = cmp(row, self._lastRow)
-		for r in xrange(self._lastRow, row, direction ):
+		lastRowSave = [self.GetCellValue(self._lastRow, c) for c in range(self.GetNumberCols())]
+		lastRowBackgroundColourSave = [self.GetCellBackgroundColour(self._lastRow, c) for c in range(self.GetNumberCols())]
+		direction = 1 if row > self._lastRow else -1 if row < self._lastRow else 0
+		for r in range(self._lastRow, row, direction ):
 			self.copyRow( r + direction, r )
-		for c in xrange(self.GetNumberCols()):
+		for c in range(self.GetNumberCols()):
 			self.SetCellValue( row, c, lastRowSave[c] )
 			self.SetCellBackgroundColour( row, c, lastRowBackgroundColourSave[c] )
 		
@@ -183,14 +183,14 @@ class KeyboardNavigationGridMixin( object ):
 			if event.ShiftDown():
 				if self.GetGridCursorCol() == 0 and self.GetGridCursorRow() != 0:
 					self.MoveCursorUp(False)
-					for c in xrange(self.GetNumberCols()):
+					for c in range(self.GetNumberCols()):
 						self.MoveCursorRight(False)
 				else:
 					self.MoveCursorLeft(False)
 			else:
 				if self.GetGridCursorCol() == self.GetNumberCols() - 1 and self.GetGridCursorRow() != self.GetNumberRows() - 1:
 					self.MoveCursorDown(False)
-					for c in xrange(self.GetNumberCols()):
+					for c in range(self.GetNumberCols()):
 						self.MoveCursorLeft(False)
 				else:
 					self.MoveCursorRight(False)
@@ -217,15 +217,15 @@ class SaveEditWhenFocusChangesGridMixin( object ):
 		
 ########################################################################
 class CornerReorderableGridLabelRenderer(glr.GridLabelRenderer):
-    def __init__(self):
-        self._bmp = wx.Bitmap( os.path.join(Utils.getImageFolder(), 'UpDown.png'), wx.BITMAP_TYPE_PNG )
-        
-    def Draw(self, grid, dc, rect, rc):
+	def __init__(self):
+		self._bmp = wx.Bitmap( os.path.join(Utils.getImageFolder(), 'UpDown.png'), wx.BITMAP_TYPE_PNG )
+		
+	def Draw(self, grid, dc, rect, rc):
 		if grid._enableReorderRows:
 			x = rect.left + (rect.width - self._bmp.GetWidth()) / 2
 			y = rect.top + (rect.height - self._bmp.GetHeight()) / 2
 			dc.DrawBitmap(self._bmp, x, y, True)
-   
+
 class ReorderableGrid(	gridlib.Grid,
 						ReorderableGridRowMixin,
 						KeyboardNavigationGridMixin,

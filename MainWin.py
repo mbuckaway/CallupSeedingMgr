@@ -70,7 +70,7 @@ class MainWin( wx.Frame ):
 			startDirectory=os.path.expanduser('~'),
 			fileMask='Excel Spreadsheet (*.xlsx; *.xlsm; *.xls)|*.xlsx; *.xlsml; *.xls',
 			size=(400,-1),
-			history=lambda: [ self.filehistory.GetHistoryFile(i) for i in xrange(self.filehistory.GetCount()) ],
+			history=lambda: [ self.filehistory.GetHistoryFile(i) for i in range(self.filehistory.GetCount()) ],
 			changeCallback=self.doChangeCallback,
 		)
 		inputBoxSizer.Add( self.fileBrowse, 0, flag=wx.EXPAND|wx.ALL, border=4 )
@@ -282,7 +282,7 @@ class MainWin( wx.Frame ):
 	
 	def getTopRiders( self ):
 		i = self.topRiders.GetSelection()
-		return 5 * i if i > 0 else sys.maxint
+		return 5 * i if i > 0 else 999999
 		
 	def getIsCallup( self ):
 		return self.callupSeedingRB.GetSelection() == 0
@@ -336,21 +336,21 @@ class MainWin( wx.Frame ):
 			return
 			
 		def insert_source_info( source, errors, add_value_field=True ):
-			idx = self.sourceList.InsertItem( sys.maxint, source.sheet_name )
+			idx = self.sourceList.InsertItem( 999999, source.sheet_name )
 			fields = source.get_ordered_fields()
 			if add_value_field and source.get_cmp_policy_field():
 				fields = [source.get_cmp_policy_field()] + list(fields)
 			self.sourceList.SetItem( idx, 1, u', '.join( make_title(f) for f in fields ) )
 			match_fields = source.get_match_fields(sources[-1]) if source != sources[-1] else []
 			self.sourceList.SetItem( idx, 2, u', '.join( make_title(f) for f in match_fields ) )
-			self.sourceList.SetItem( idx, 3, unicode(len(source.results)) )
-			self.sourceList.SetItem( idx, 4, unicode(len(errors)) )
+			self.sourceList.SetItem( idx, 3, u'{}'.format(len(source.results)) )
+			self.sourceList.SetItem( idx, 4, u'{}'.format(len(errors)) )
 		
 		insert_source_info( sources[-1], errors[-1], False )
 		for i, source in enumerate(sources[:-1]):
 			insert_source_info( source, errors[i] )
 		
-		for col in xrange(3):
+		for col in range(3):
 			self.sourceList.SetColumnWidth( col, wx.LIST_AUTOSIZE )
 		self.sourceList.SetColumnWidth( 3, 52 )
 		self.sourceList.Refresh()
@@ -428,7 +428,7 @@ class MainWin( wx.Frame ):
 					):
 				return
 		
-		user_sequence = [int(self.grid.GetCellValue(row, self.grid.GetNumberCols()-1)) for row in xrange(self.grid.GetNumberRows())]
+		user_sequence = [int(self.grid.GetCellValue(row, self.grid.GetNumberCols()-1)) for row in range(self.grid.GetNumberRows())]
 		user_callup_results = [self.callup_results[i] for i in user_sequence]
 		
 		try:

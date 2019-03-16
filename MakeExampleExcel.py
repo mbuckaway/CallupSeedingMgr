@@ -11,10 +11,10 @@ from Model import Source, Result
 from GetCallups import make_title
 
 def random_license():
-	return u''.join( 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[random.randint(0,25)] for i in xrange(6) )
+	return u''.join( 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[random.randint(0,25)] for i in range(6) )
 
 def random_uci_id():
-	id = '9{}'.format(''.join( random.choice('0123456789') for i in xrange(8)) )
+	id = '9{}'.format(''.join( random.choice('0123456789') for i in range(8)) )
 	id += '{:02d}'.format( int(id) % 97 )
 	return id
 
@@ -32,11 +32,11 @@ def MakeExampleExcel( include_uci_points=True, include_national_points=True, inc
 
 	uci_sample = random.sample( uci_points.results, 20 )
 	
-	common_first_names = [unicode(n,'utf-8') for n in 'Léopold Grégoire Aurélien Rémi Léandre Thibault Kylian Nathan Lucas Enzo Léo Louis Hugo Gabriel Ethan Mathis Jules Raphaël Arthur Théo Noah Timeo Matheo Clément Maxime Yanis Maël'.split()]
-	common_last_names = [unicode(n,'utf-8') for n in 'Tisserand Lavergne Guignard Parmentier Evrard Leclerc Martin Bernard Dubois Petit Durand Leroy Moreau Simon Laurent Lefevre Roux Fournier Dupont'.split()]
+	common_first_names = u'Léopold Grégoire Aurélien Rémi Léandre Thibault Kylian Nathan Lucas Enzo Léo Louis Hugo Gabriel Ethan Mathis Jules Raphaël Arthur Théo Noah Timeo Matheo Clément Maxime Yanis Maël'.split()
+	common_last_names = u'Tisserand Lavergne Guignard Parmentier Evrard Leclerc Martin Bernard Dubois Petit Durand Leroy Moreau Simon Laurent Lefevre Roux Fournier Dupont'.split()
 	
 	other_sample = []
-	for i in xrange(20):
+	for i in range(20):
 		other_sample.append( Result(
 				first_name=common_first_names[i%len(common_first_names)],
 				last_name=common_last_names[i%len(common_last_names)],
@@ -47,7 +47,7 @@ def MakeExampleExcel( include_uci_points=True, include_national_points=True, inc
 		
 	registration = list(uci_sample) + other_sample
 	
-	bibs = [i for i in xrange(100,200)]
+	bibs = list(range(100,200))
 	random.shuffle( bibs )
 	
 	for i, r in enumerate(registration):

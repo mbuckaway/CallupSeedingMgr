@@ -1,4 +1,3 @@
-
 import os
 import sys
 import xlwt
@@ -19,9 +18,9 @@ def GetCallups( fname, soundalike=True, useUciId=True, useLicense=True, callback
 	
 	registration_sheet_count = sum( 1 for sheet in sheet_names if sheet == RegistrationSheet )
 	if registration_sheet_count == 0:
-		raise ValueError, u'{}: "{}"'.format('Spreadsheet is missing sheet', RegistrationSheet )
+		raise ValueError( u'{}: "{}"'.format('Spreadsheet is missing sheet', RegistrationSheet ) )
 	if registration_sheet_count > 1:
-		raise ValueError, u'{}: "{}"'.format('Spreadsheet must have exactly one sheet named', RegistrationSheet )
+		raise ValueError( u'{}: "{}"'.format('Spreadsheet must have exactly one sheet named', RegistrationSheet ) )
 	
 	if callbackupdate: callbackupdate( u'{}: {}'.format(_('Reading'), RegistrationSheet) )
 	

@@ -4,6 +4,7 @@ import sys
 import six
 import datetime
 import random
+import operator
 from metaphone import doublemetaphone
 
 import Utils
@@ -18,16 +19,16 @@ countryTranslations = {
 	'United States of America': 	'United States',
 	'Hong Kong, China':				'Hong Kong',
 }
-countryTranslations = { k.upper(): v for k, v in countryTranslations.iteritems() }
+countryTranslations = { k.upper(): v for k, v in countryTranslations.items() }
 
 specialNationCodes = uci_country_codes
-specialNationCodes = { k.upper(): v for k, v in specialNationCodes.iteritems() }
+specialNationCodes = { k.upper(): v for k, v in specialNationCodes.items() }
 
 non_digits = re.compile( u'[^0-9]' )
 all_quotes = re.compile( u"[\u2019\u0027\u2018\u201C\u201D`\"]", re.UNICODE )
 all_stars = re.compile( u"[*\u2605\u22C6]" )
 def normalize_name( s ):
-	s = all_quotes.sub( u"'", unicode(s).replace(u'(JR)',u'') )
+	s = all_quotes.sub( u"'", u'{}'.format(s).replace(u'(JR)',u'') )
 	s = all_stars.sub( u"", s )
 	return s.strip()
 	
@@ -37,7 +38,7 @@ def normalize_name_lookup( s ):
 def format_uci_id( uci_id ):
 	if not uci_id:
 		return u''
-	return u' '.join( uci_id[i:i+3] for i in xrange(0, len(uci_id), 3) )
+	return u' '.join( uci_id[i:i+3] for i in range(0, len(uci_id), 3) )
 	
 def parse_name( name ):
 	name = normalize_name( name )
@@ -47,7 +48,7 @@ def parse_name( name ):
 		return first_name, last_name
 	
 	# Check that there are at least two consecutive capitalized characters in the name somewhere.
-	for i in xrange(len(name)-1):
+	for i in range(len(name)-1):
 		chars2 = name[i:i+1]
 		if chars2.isalpha() and chars2 == chars2.upper():
 			break
@@ -56,7 +57,7 @@ def parse_name( name ):
 	
 	# Find the last alpha character.
 	cLast = 'C'
-	for i in xrange(len(name)-1, -1, -1):
+	for i in range(len(name)-1, -1, -1):
 		if name[i].isalpha():
 			cLast = name[i]
 			break
@@ -141,7 +142,7 @@ class Result( object ):
 			setattr( self, f, kwargs.get(f, None) )
 			
 		if self.license is not None:
-			self.license = unicode(self.license).strip()
+			self.license = u'{}'.format(self.license).strip()
 			
 		if self.row:
 			try:
@@ -160,7 +161,7 @@ class Result( object ):
 				self.position = None
 				self.points = None
 			else:
-				self.position = non_digits.sub( u'', unicode(self.position) )
+				self.position = non_digits.sub( u'', u'{}'.format(self.position) )
 				try:
 					self.position = int(self.position)
 				except ValueError:
@@ -186,7 +187,7 @@ class Result( object ):
 		
 		# Get the 3-digit nation code from the nation name.
 		if self.nation:
-			self.nation = unicode(self.nation).replace( u'&', u'and' ).strip()
+			self.nation = u'{}'.format(self.nation).replace( u'&', u'and' ).strip()
 			self.nation = countryTranslations.get(self.nation.upper(), self.nation)
 			if not self.nation_code:
 				self.nation_code = ioc_from_country( self.nation )
@@ -208,9 +209,9 @@ class Result( object ):
 		assert self.date_of_birth is None or isinstance(self.date_of_birth, datetime.date), 'invalid Date of Birth'
 		
 		if self.uci_id is not None:
-			self.uci_id = unicode(self.uci_id).replace( u' ', '' )
+			self.uci_id = u'{}'.format(self.uci_id).replace( u' ', '' )
 			try:
-				self.uci_id = unicode( int(self.uci_id) )
+				self.uci_id = u'{}'.format( int(self.uci_id) )
 			except ValueError:
 				raise ValueError( u'uci_id: "{}" contains non-digits ({}, {})'.format(self.uci_id, self.last_name, self.first_name) )
 			if self.uci_id == 0:
@@ -223,8 +224,8 @@ class Result( object ):
 		
 	def as_str( self, fields=None ):
 		fields = fields or self.Fields
-		data = [ unicode(getattr(self,f).upper() if f == 'last_name' else getattr(self,f)) for f in fields if getattr(self,f,None) is not None and f != 'row' ]
-		for i in xrange(len(data)):
+		data = [ u'{}'.format(getattr(self,f).upper() if f == 'last_name' else getattr(self,f)) for f in fields if getattr(self,f,None) is not None and f != 'row' ]
+		for i in range(len(data)):
 			d = data[i]
 			for t, fmt in ((int, u'{}'), (float, u'{:.3f}')):
 				try:
@@ -265,7 +266,7 @@ class Result( object ):
 							lines.append( u'{}'.format(v) )
 					else:
 						if f == 'team':
-							v = unicode(v)
+							v = u'{}'.format(v)
 							if len(v) > 30:
 								v = v[:27] + u'...'
 						lines.append( u'{}={}'.format(f, v) )
@@ -295,7 +296,7 @@ class Result( object ):
 		if self.cmp_policy == self.ByPoints:
 			return -(self.points or 0)
 		elif self.cmp_policy == self.ByPosition:
-			return self.position or sys.maxint
+			return self.position or 999999
 		assert False, 'Invalid cmp_policy'
 		
 	def get_sort_key( self ):
@@ -326,7 +327,7 @@ header_sub = {
 	u'STATE':			u'STATE',
 }
 def scrub_header( h ):
-	h = reAlpha.sub( '', Utils.removeDiacritic(unicode(h)).upper() )
+	h = reAlpha.sub( '', Utils.removeDiacritic(u'{}'.format(h)).upper() )
 	return header_sub.get(h, h)
 
 def soundalike_match( s1, s2 ):
@@ -346,13 +347,13 @@ class FindResult( object ):
 	def get_key( self ):
 		if len(self.matches) == 1:
 			return self.matches[0].get_key()
-		return 0 if self.source.cmp_policy == Result.ByPoints else sys.maxint
+		return 0 if self.source.cmp_policy == Result.ByPoints else 999999
 	
 	def get_sort_key( self ):
 		try:
 			row = self.matches[0].row
 		except:
-			row = sys.maxint
+			row = 999999
 		return (self.get_key(), row)
 	
 	def get_value( self ):
@@ -372,7 +373,7 @@ class FindResult( object ):
 		return self.MultiMatch
 	
 	def __repr__( self ):
-		return unicode(self.get_value())
+		return u'{}'.format(self.get_value())
 	
 	def get_name_status( self ):
 		if not self.Success or len(self.matches) != 1:
@@ -405,7 +406,7 @@ def validate_uci_id( uci_id ):
 	if not uci_id:
 		return
 		
-	uci_id = unicode(uci_id).upper().replace(u' ', u'')
+	uci_id = u'{}'.format(uci_id).upper().replace(u' ', u'')
 	
 	if not uci_id.isdigit():
 		raise ValueError( u'uci id "{}" must be all digits'.format(uci_id) )
@@ -477,14 +478,14 @@ class Source( object ):
 				continue
 		
 			try:
-				if all( not row[i] for i in xrange(3) ):
+				if all( not row[i] for i in range(3) ):
 					continue
 			except IndexError:
 				continue
 		
 			# Create a Result from the row.
 			row_fields = {}
-			for field, column in header_map.iteritems():
+			for field, column in header_map.items():
 				try:
 					row_fields[field] = row[column]
 				except IndexError:
@@ -528,7 +529,7 @@ class Source( object ):
 		return tuple(f for f in Result.Fields if f in self.hasField and f not in ('points', 'position', 'row'))
 	
 	def randomize_positions( self ):
-		positions = range( 1, len(self.results)+1 )
+		positions = list(range( 1, len(self.results)+1 ))
 		random.seed( 0xededed )
 		random.shuffle( positions )
 		self.cmp_policy = Result.ByPosition
@@ -593,17 +594,17 @@ class Source( object ):
 	def match_indices( self, search, indices ):
 		# Look for a set intersection of one element between all source criteria.
 		
-		if self.debug: print 'match_indices: searchKeys=', indices
+		if self.debug: print ( 'match_indices: searchKeys=', indices )
 		
 		soundalike = False
 		setCur = None
 		for idx_name in indices:
-			if self.debug: print "match_indices: matching on key:", idx_name
+			if self.debug: print ( "match_indices: matching on key:", idx_name )
 			idx = getattr( self, idx_name )
 			v = getattr( search, self.field_from_index(idx_name), None )
 			if not v or not idx:
 				setCur = None
-				if self.debug: print 'match_indices: missing attribute'
+				if self.debug: print ( 'match_indices: missing attribute' )
 				break
 
 			try:
@@ -611,7 +612,7 @@ class Source( object ):
 			except:
 				pass
 				
-			if self.debug: print 'match_indices: value=', v
+			if self.debug: print ( 'match_indices: value=', v )
 			
 			found = set()
 			if idx_name.startswith( 'by_mp_' ):
@@ -628,21 +629,21 @@ class Source( object ):
 				setCur &= set(found)
 			
 			if not setCur:
-				if self.debug: print "match_indices: match failed. found=", found
+				if self.debug: print ( "match_indices: match failed. found=", found )
 				break
 			
-			if self.debug: print "matched:", setCur
+			if self.debug: print ( "matched:", setCur )
 		
 		return FindResult( search, setCur, self, soundalike )
 	
 	def find( self, search ):
 		''' Returns (result, messages) - result will be None if no match. '''
 		if self.debug:
-			print '-' * 60
-			print 'sheet_name:', self.sheet_name
-			print 'find: search=', search, hasattr( search, 'last_name'), hasattr( search, 'uci_id' ), getattr( search, 'uci_id' )
-			print self.by_last_name.get('BELHUMEUR', None)
-			print self.by_first_name.get('FELIX', None)
+			print ( '-' * 60 )
+			print ( 'sheet_name:', self.sheet_name )
+			print ( 'find: search=', search, hasattr( search, 'last_name'), hasattr( search, 'uci_id' ), getattr( search, 'uci_id' ) )
+			print ( self.by_last_name.get('BELHUMEUR', None) )
+			print ( self.by_first_name.get('FELIX', None) )
 
 		# First check for a common UCI ID.  If so, attempt to match it exactly and stop.
 		if self.useUciId:
@@ -662,7 +663,7 @@ class Source( object ):
 		)
 		for pi in perfectIndices:
 			if self.has_all_index_fields(search, pi):
-				if self.debug: print 'found index:', pi
+				if self.debug: print ( 'found index:', pi )
 				findResult = self.match_indices( search, pi )
 				if findResult.get_status() == FindResult.Success:
 					return findResult
@@ -677,7 +678,7 @@ class Source( object ):
 			
 			for pi in potentialIndices:
 				if self.has_all_index_fields(search, pi):
-					if self.debug: print 'found index:', pi
+					if self.debug: print ( 'found index:', pi )
 					indices = pi
 					break
 		
@@ -693,10 +694,10 @@ class Source( object ):
 			if not self.soundalike and any(i.startswith('by_mp_') for i in pi):
 				continue
 			if self.has_all_index_fields(search, pi):
-				if self.debug: print 'matching on fields:', pi
+				if self.debug: print ( 'matching on fields:', pi )
 				findResult = self.match_indices( search, pi )
 				if findResult.get_status() != findResult.NoMatch:
-					if self.debug: print 'success', findResult
+					if self.debug: print ( 'success', findResult )
 					return findResult
 		
 		return FindResult( search, [], self, False )
@@ -710,16 +711,16 @@ class ResultCollection( object ):
 		
 if __name__ == '__main__':
 	s = Source( 'CallupTest.xlsx', '2014 Result' )
-	errors = s.read( GetExcelReader(self.fname) )
-	print s.by_mp_last_name
+	# errors = s.read( GetExcelReader(self.fname) )
+	print ( s.by_mp_last_name )
 	sys.exit()
 	
 	#for r in s.results:
-	#	print r
-	for k, v in sorted( ((k, v) for k, v in s.by_mp_last_name.iteritems()), key=lambda x: x[0] ):
-		print '{}: {}'.format(k, ', '.join( Utils.removeDiacritic(r.full_name) for r in v ))
-	for k, v in sorted( ((k, v) for k, v in s.by_mp_first_name.iteritems()), key=lambda x: x[0] ):
-		print '{}: {}'.format(k, ', '.join( Utils.removeDiacritic(r.full_name) for r in v ))
+	#	print ( r )
+	for k, v in sorted( ((k, v) for k, v in s.by_mp_last_name.items()), key=operator.itemgetter(0) ):
+		print ( '{}: {}'.format(k, ', '.join( Utils.removeDiacritic(r.full_name) for r in v )) )
+	for k, v in sorted( ((k, v) for k, v in s.by_mp_first_name.items()), key=operator.itemgetter(0) ):
+		print ( '{}: {}'.format(k, ', '.join( Utils.removeDiacritic(r.full_name) for r in v )) )
 		
 	for r in s.results:
 		for p_last in doublemetaphone(r.last_name.replace('-','').encode('utf8')):
@@ -730,8 +731,8 @@ if __name__ == '__main__':
 				p_first_set = s.by_mp_first_name[p_first]
 				p_last_first_set = p_last_set & p_first_set
 				if len(p_last_first_set) > 1:
-					print ', '.join( u'({}, {}, {})'.format(
+					print ( ', '.join( u'({}, {}, {})'.format(
 							Utils.removeDiacritic(rr.full_name), Utils.removeDiacritic(rr.nation_code), rr.age,
 						)
-						for rr in p_last_first_set )
+						for rr in p_last_first_set ) )
 
