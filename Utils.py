@@ -34,16 +34,16 @@ import traceback
 import subprocess
 import unicodedata
 
-def removeDiacritic(input):
+def removeDiacritic( s ):
 	'''
 	Accept a unicode string, and return a normal string
 	without any diacritical marks.
 	'''
-	if isinstance(input, six.string_types):
-		return unicodedata.normalize('NFKD', input).encode('ASCII', 'ignore').decode()
-	else:
-		return input
-	
+	try:
+		return unicodedata.normalize('NFKD', u'{}'.format(s)).encode('ASCII', 'ignore').decode()
+	except:
+		return s
+		
 '''
 wx.ICON_EXCLAMATION	Shows an exclamation mark icon.
 wx.ICON_HAND	Shows an error icon.

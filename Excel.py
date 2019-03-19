@@ -13,7 +13,7 @@ from mmap import mmap, ACCESS_READ
 def toAscii( s ):
 	if not s:
 		return u''
-	ret = unicodedata.normalize('NFKD', s).encode('ascii','ignore').encode() if isinstance(s, six.string_types) else u'{}'.format(s)
+	ret = unicodedata.normalize('NFKD', u'{}'.format(s)).encode('ascii','ignore').encode()
 	if ret.endswith( '.0' ):
 		ret = ret[:-2]
 	return ret
