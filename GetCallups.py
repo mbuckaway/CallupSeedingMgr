@@ -111,5 +111,5 @@ if __name__ == '__main__':
 	fname = 'Men_Elite_XCO_CallupData.xlsx'
 	registration_headers, callup_headers, callup_results, sources, errors = GetCallups( fname, callbackupdate=callbackupdate )
 	#for row in callup_results:
-	#	print [Utils.removeDiacritic(unicode(v)) for v in row]
+	#	print [Utils.removeDiacritic(u'{}'.format(v)) for v in row]
 	#CallupResultsToExcel( 'test_output.xlsx', registration_headers, callup_headers, callup_results )
