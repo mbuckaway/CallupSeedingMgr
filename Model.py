@@ -24,7 +24,7 @@ specialNationCodes = uci_country_codes
 specialNationCodes = { k.upper(): v for k, v in specialNationCodes.items() }
 
 non_digits = re.compile( u'[^0-9]' )
-all_quotes = re.compile( u"[\u2019\u0027\u2018\u201C\u201D`\"]", re.UNICODE )
+all_quotes = re.compile( u"[\u2019\u0027\u2018\u201C\u201D`\"]" )
 all_stars = re.compile( u"[*\u2605\u22C6]" )
 def normalize_name( s ):
 	s = all_quotes.sub( u"'", u'{}'.format(s).replace(u'(JR)',u'') )

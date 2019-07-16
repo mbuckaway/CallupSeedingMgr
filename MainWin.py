@@ -159,13 +159,14 @@ class MainWin( wx.Frame ):
 		hs.Add( wx.StaticText(self, label=_("Output:") ), flag=wx.ALL|wx.ALIGN_CENTRE_VERTICAL, border=4 )
 		self.topRiders = wx.Choice( self, choices=[_('All Riders'), _('Top 5'), _('Top 10'), _('Top 15'), _('Top 20'), _('Top 25')] )
 		self.topRiders.SetSelection( 0 )
-		hs.Add( self.topRiders )
-		
-		outputBoxSizer.Add( hs )
+		hs.Add( self.topRiders, flag=wx.ALIGN_CENTRE_VERTICAL )
 		
 		self.saveAsExcel = wx.Button( self, label=_('Save as Excel...') )
 		self.saveAsExcel.Bind( wx.EVT_BUTTON, self.doSaveAsExcel )
-		outputBoxSizer.Add( self.saveAsExcel, flag=wx.ALL, border=4 )
+		hs.AddSpacer( 48 )
+		hs.Add( self.saveAsExcel, flag=wx.ALL, border=4 )
+		
+		outputBoxSizer.Add( hs )
 		
 		mainSizer = wx.BoxSizer( wx.VERTICAL )
 		mainSizer.Add( inputBoxSizer, flag=wx.EXPAND|wx.ALL, border = 4 )
