@@ -107,7 +107,7 @@ except:
 shutil.copy( 'install\\CallupSeedingMgr_Setup.exe', 'install\\' + newExeName )
 print ( 'executable copied to: ' + newExeName )
 
-# Create comprssed executable.
+# Create compressed executable.
 os.chdir( 'install' )
 newExeName = os.path.basename( newExeName )
 newZipName = newExeName.replace( '.exe', '.zip' )
