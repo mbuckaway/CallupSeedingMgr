@@ -27,7 +27,6 @@ except ImportError:
 import os
 import re
 import sys
-import six
 import platform
 import datetime
 import traceback

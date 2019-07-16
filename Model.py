@@ -1,7 +1,6 @@
 import os
 import re
 import sys
-import six
 import datetime
 import random
 import operator
@@ -310,29 +309,50 @@ class Result( object ):
 		assert False, 'Invalid cmp_policy'
 
 reAlpha = re.compile( '[^A-Z]+' )
+# Header aliases.
 header_sub = {
 	u'RANK':			u'POSITION',
 	u'POS':				u'POSITION',
 	u'PLACE':			u'POSITION',
+	u'RIDERRANK':		u'POSITION',
+	u'RIDERPOS':		u'POSITION',
+	u'RIDERPLACE':		u'POSITION',
+	
+	u'NUM':				u'BIB',
 	u'BIBNUM':			u'BIB',
 	u'BIBNUMBER':		u'BIB',
-	u'NUM':				u'BIB',
-	u'LICENSENUMBER':	u'LICENSE',
+	u'RIDERBIB':		u'BIB',
+	u'RIDERNUM':		u'BIB',
+	
 	u'LIC':				u'LICENSE',
+	u'LICENSENUMBER':	u'LICENSE',
+	u'LICNUMBER':		u'LICENSE',
+	u'RIDERLICENSE':	u'LICENSE',
+	
 	u'DOB':				u'DATEOFBIRTH',
+	
 	u'FIRST':			u'FIRSTNAME',
+	u'FNAME':			u'FIRSTNAME',
+	u'RIDERFIRSTNAME':	u'FIRSTNAME',
+	
 	u'LAST':			u'LASTNAME',
+	u'LNAME':			u'LASTNAME',
+	u'RIDERLASTNAME':	u'LASTNAME',
+	
 	u'PROV':			u'STATEPROV',
 	u'PROVINCE':		u'STATEPROV',
-	u'STATE':			u'STATE',
+	u'STATE':			u'STATEPROV',
+
+	u'TOTALPTS':		u'POINTS',
 }
 def scrub_header( h ):
-	h = reAlpha.sub( '', Utils.removeDiacritic(u'{}'.format(h)).upper() )
+	# For slash-separated headers, only the first word is used.
+	h = reAlpha.sub( '', Utils.removeDiacritic(u'{}'.format(h).split('/', maxsplit=1)[0]).upper() )
 	return header_sub.get(h, h)
 
 def soundalike_match( s1, s2 ):
-	dmp1 = doublemetaphone( s1.replace('-','').encode('utf8') )
-	dmp2 = doublemetaphone( s2.replace('-','').encode('utf8') )
+	dmp1 = doublemetaphone( s1.replace('-','').encode() )
+	dmp2 = doublemetaphone( s2.replace('-','').encode() )
 	return any( v in dmp1 for v in dmp2 )
 	
 class FindResult( object ):
@@ -470,7 +490,9 @@ class Source( object ):
 			
 			# Map the column headers to the standard fields.
 			if not header_map:
+				# First, convert the standard fields into "scrub" fields.
 				header_scrub = { scrub_header(h):h for h in header_fields }
+				# Then, map the scrubbed standard fields into the scrubbed row fields.
 				for c, v in enumerate(row):
 					rv = scrub_header( v )
 					if rv in header_scrub:
@@ -558,7 +580,7 @@ class Source( object ):
 				continue
 			idx = getattr( self, idx_name )			
 			if idx_name.startswith( 'by_mp_' ):	# Initialize a doublemetaphone (soundalike) index.
-				for mp in doublemetaphone(v.replace('-','').encode('utf8')):
+				for mp in doublemetaphone(v.replace('-','').encode()):
 					if mp:
 						try:
 							idx[mp].append( result )
@@ -617,7 +639,7 @@ class Source( object ):
 			found = set()
 			if idx_name.startswith( 'by_mp_' ):
 				soundalike = True
-				for mp in doublemetaphone(v.replace('-','').encode('utf8')):
+				for mp in doublemetaphone(v.replace('-','').encode()):
 					if mp and mp in idx:
 						found |= set(idx[mp])
 			elif v in idx:
@@ -723,11 +745,11 @@ if __name__ == '__main__':
 		print ( '{}: {}'.format(k, ', '.join( Utils.removeDiacritic(r.full_name) for r in v )) )
 		
 	for r in s.results:
-		for p_last in doublemetaphone(r.last_name.replace('-','').encode('utf8')):
+		for p_last in doublemetaphone(r.last_name.replace('-','').encode()):
 			if not p_last:
 				continue
 			p_last_set = s.by_mp_last_name[p_last]
-			for p_first in doublemetaphone(r.first_name.replace('-','').encode('utf8')):
+			for p_first in doublemetaphone(r.first_name.replace('-','').encode()):
 				p_first_set = s.by_mp_first_name[p_first]
 				p_last_first_set = p_last_set & p_first_set
 				if len(p_last_first_set) > 1:
