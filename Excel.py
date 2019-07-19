@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function
-
 import xlrd
 import xml.etree.ElementTree
 import os

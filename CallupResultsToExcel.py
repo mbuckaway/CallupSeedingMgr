@@ -33,13 +33,14 @@ def CallupResultsToExcel( fname_excel, registration_headers, callup_headers, cal
 			uci_id_col = col
 			
 	header_col = {}
-	col_cur = 0
+	col_cur = 1		# Add one columne room for the Order column.
 	for v in callup_headers:
 		if v in ignore_headers:
 			continue
 		header_col[v] = col_cur
 		col_cur += 1
 			
+	fit_sheet.write( rowNum, 0, 'Order', bold_format, bold=True )
 	for v in callup_headers:
 		if v in ignore_headers:
 			continue
@@ -47,6 +48,7 @@ def CallupResultsToExcel( fname_excel, registration_headers, callup_headers, cal
 	rowNum += 1
 		
 	for row in callup_results:
+		fit_sheet.write( rowNum, 0, rowNum )
 		for c, value in enumerate(row):
 			if callup_headers[c] in ignore_headers:
 				continue
