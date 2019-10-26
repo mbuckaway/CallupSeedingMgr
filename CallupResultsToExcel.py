@@ -17,6 +17,12 @@ def CallupResultsToExcel( fname_excel, registration_headers, callup_headers, cal
 
 	wb = xlsxwriter.Workbook( fname_excel )
 	ws = wb.add_worksheet('Callups' if is_callup is True else 'Seeding')
+	
+	# Set print prefereces.
+	ws.set_landscape()
+	ws.hide_gridlines( 0 )
+	ws.fit_to_pages( 1, 1 )
+	
 	fit_sheet = FitSheetWrapper( ws )
 	
 	bold_format = wb.add_format( {'bold': True} )
