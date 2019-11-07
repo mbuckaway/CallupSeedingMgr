@@ -107,6 +107,7 @@ class Result( object ):
 	
 	Fields = (
 		'bib',
+		'bibnum',
 		'first_name', 'last_name',
 		'team',
 		'team_code',

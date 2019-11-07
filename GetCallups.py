@@ -103,7 +103,7 @@ def GetCallups( fname, soundalike=True, useUciId=True, useLicense=True, callback
 
 def make_title( title ):
 	t = u' '.join( (w[:1].upper() + w[1:]).replace(u'Uci',u'UCI').replace(u'Id',u'ID').replace('Of','of') for w in title.split(u'_') )
-	return t.replace('Tagnum', 'TagNum')
+	return t.replace('Tagnum', 'TagNum').replace('Bibnum', 'BibNum')
 
 if __name__ == '__main__':
 	def callbackupdate( msg ):
