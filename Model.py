@@ -120,6 +120,8 @@ class Result( object ):
 		'age',
 		'date_of_birth',
 		'points', 'position',
+		'tag',
+		'tagnum',
 		'row'
 	)
 	NumericFields = set([
@@ -249,6 +251,8 @@ class Result( object ):
 			'nation',
 			'nation_code',
 			'points', 'position',
+			'tag',
+			'tagnum',
 			'row'
 		)
 		fLast = None

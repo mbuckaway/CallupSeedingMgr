@@ -102,7 +102,8 @@ def GetCallups( fname, soundalike=True, useUciId=True, useLicense=True, callback
 	return registration_headers, callup_headers, callup_results, sources, errors
 
 def make_title( title ):
-	return u' '.join( (w[:1].upper() + w[1:]).replace(u'Uci',u'UCI').replace(u'Id',u'ID').replace('Of','of') for w in title.split(u'_') )
+	t = u' '.join( (w[:1].upper() + w[1:]).replace(u'Uci',u'UCI').replace(u'Id',u'ID').replace('Of','of') for w in title.split(u'_') )
+	return t.replace('Tagnum', 'TagNum')
 
 if __name__ == '__main__':
 	def callbackupdate( msg ):
