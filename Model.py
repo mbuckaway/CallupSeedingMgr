@@ -324,7 +324,6 @@ header_sub = {
 	u'RIDERPLACE':		u'POSITION',
 	
 	u'NUM':				u'BIB',
-	u'BIBNUM':			u'BIB',
 	u'BIBNUMBER':		u'BIB',
 	u'RIDERBIB':		u'BIB',
 	u'RIDERNUM':		u'BIB',
