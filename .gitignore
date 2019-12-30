@@ -1,0 +1,9 @@
+.pyw.spec
+build/
+env/
+dist/
+release/
+htmlindex/
+__pycache__/
+CallupSeedingMgr.spec
+htmldoc
