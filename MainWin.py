@@ -223,15 +223,15 @@ class MainWin( wx.Frame ):
 		self.SetSizer( mainSizer )
 
 	def OnAboutBox(self, e):
-			description = """CrossMgrSeedingMgr is an SeedingMgr for CrossMgr
+			description = """CallupSeedingMgr is an Seeding Manager for CrossMgr
 	"""
 
-			licence = """CrossMgrSeedingMgr free software; you can redistribute 
+			licence = """CallupSeedingMgr free software; you can redistribute 
 	it and/or modify it under the terms of the GNU General Public License as 
 	published by the Free Software Foundation; either version 2 of the License, 
 	or (at your option) any later version.
 
-	CrossMgrSeedingMgr is distributed in the hope that it will be useful, 
+	CallupSeedingMgr is distributed in the hope that it will be useful, 
 	but WITHOUT ANY WARRANTY; without even the implied warranty of 
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
 	See the GNU General Public License for more details. You should have 
@@ -241,9 +241,9 @@ class MainWin( wx.Frame ):
 
 			info = wx.adv.AboutDialogInfo()
 
-			crossMgrPng = Utils.getImageFolder() + '/CrossMgrSeedingMgr.png'
+			crossMgrPng = Utils.getImageFolder() + '/CallupSeedingMgr.png'
 			info.SetIcon(wx.Icon(crossMgrPng, wx.BITMAP_TYPE_PNG))
-			info.SetName('CrossMgrSeedingMgr')
+			info.SetName('CallupSeedingMgr')
 			info.SetVersion(AppVerName.split(' ')[1])
 			info.SetDescription(description)
 			info.SetCopyright('(C) 2020 Edward Sitarski')
