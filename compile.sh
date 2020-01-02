@@ -123,7 +123,7 @@ copyAssets(){
 	mkdir -p $RESOURCEDIR
 	if [ "$OSNAME" == "Linux" ];then
                 mv dist/${PROGRAM}/* $RESOURCEDIR
-                cp -v "${BUILDDIR}/${PROGRAM}Images/${PROGRAM}.png" "dist/${PROGRAM}"
+                cp -v "images/${PROGRAM}.png" "dist/${PROGRAM}"
 		echo "Setting up AppImage in dist/${PROGRAM}"
 		sed "s/%PROGRAM%/$PROGRAM/g" appimage/AppRun.tmpl > "dist/${PROGRAM}/AppRun"
 		chmod 755 "dist/${PROGRAM}/AppRun"

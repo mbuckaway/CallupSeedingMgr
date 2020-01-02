@@ -7,10 +7,8 @@ pytz
 fpdf
 natural-keys
 xlwt
-netifaces
 qrcode
 tornado
-ftputil
 wxWidgets
 markdown
 bs4

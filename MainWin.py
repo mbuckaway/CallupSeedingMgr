@@ -222,6 +222,10 @@ class MainWin( wx.Frame ):
 
 		self.SetSizer( mainSizer )
 
+	def onClose( self, event ):
+			wx.Exit()
+
+ 
 	def OnAboutBox(self, e):
 			description = """CallupSeedingMgr is an Seeding Manager for CrossMgr
 	"""
