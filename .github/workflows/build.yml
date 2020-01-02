@@ -5,7 +5,7 @@ on:
             - CHANGELOG.md
             - .github/workflows/build.yml
             - .grenrc.yml
-name: CrossMgr_Build
+name: Program_Build
 jobs:
     buildmac:
         name: MacOSX
