@@ -376,7 +376,7 @@ function Virustotal
 
 function TagRelease
 {
-	$version = GetVersion('CrossMgr')
+	($program, $version) = GetVersion
 	$date = Get-Date -format "yyyyMMddHHmmss"
 	$tagname = "v$version-$date"
 	Write-Host "Tagging with $tagname"
