@@ -1,4 +1,5 @@
-![](https://github.com/esitarski/CallUpSeedingMgr/workflows/Program_Build/badge.svg)
+![](https://github.com/esitarski/CallUpSeedingMgr/workflows/DevelopmentBuild/badge.svg)
+![](https://github.com/esitarski/CallUpSeedingMgr/workflows/ReleaseBuild/badge.svg)
 
 # CallUp Seeding Manager
 
