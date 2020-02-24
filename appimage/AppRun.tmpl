@@ -2,7 +2,8 @@
 
 export APPDIR="$(dirname "$(readlink -f "$0")")"
 export PATH="$APPDIR/usr/bin/:$PATH"
-export LD_LIBRARY_PATH="$APPDIR/usr/lib:$PATH"
+export LD_LIBRARY_PATH="$APPDIR/lib:$APPDIR/usr/lib:$PATH"
 export XDG_DATA_DIRS="$APPDIR/usr/share/:/usr/share/:$XDG_DATA_DIRS"
+export PYTHONPATH="$APPDIR/usr/bin"
 
-"$APPDIR"/usr/bin/%PROGRAM% $@
+"${APPDIR}/usr/bin/python" %PROGRAM%.pyw $@
