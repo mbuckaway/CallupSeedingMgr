@@ -251,7 +251,7 @@ class MainWin( wx.Frame ):
 			info.SetVersion(AppVerName.split(' ')[1])
 			info.SetDescription(description)
 			info.SetCopyright('(C) 2020 Edward Sitarski')
-			info.SetWebSite('http://www.sites.google.com/site/crossmgrsoftware/')
+			info.SetWebSite('http://www.crossmgr.net/')
 			info.SetLicence(licence)
 
 			wx.adv.AboutBox(info, self)
