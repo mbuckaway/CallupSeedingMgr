@@ -2,8 +2,7 @@
 
 OSNAME=$(uname -s)
 PYTHONVER="python3.8"
-PROGRAM=callupseedingmgr
-ENVDIR="dist/$PROGRAM/usr/"
+ENVDIR="dist/usr/"
 LINUXDEPLOY=linuxdeploy-plugin-appimage-x86_64.AppImage
 if [ "$OSNAME" == "Darwin" ]; then
     PYTHONVER="python3.7"
@@ -56,18 +55,18 @@ doPyInstaller() {
 
 copylibs(){
     if [ $OSNAME == "Linux" ];then
-        mkdir -p dist/${PROGRAM}/lib
+        mkdir -p dist/lib
         PYTHONBIN="$ENVDIR/bin/python"
         ldd $PYTHONBIN | grep -v "=>" | awk '{print $1}' | while read lib
         do
             if [ -f $lib ]; then
-                cp -v $lib dist/${PROGRAM}/lib
+                cp -v $lib dist/lib
             fi
         done
         ldd $PYTHONBIN | grep "=>" | awk '{print $3}' | while read lib
         do
             if [ -f $lib ]; then
-                cp -v $lib dist/${PROGRAM}/lib
+                cp -v $lib dist/lib
             fi
         done
     else
@@ -140,16 +139,15 @@ copyAssets(){
     if [ "$OSNAME" == "Darwin" ]; then
         RESOURCEDIR="dist/${PROGRAM}.app/Contents/Resources/"
     else
-        RESOURCEDIR="dist/${PROGRAM}/usr/bin/"
+        RESOURCEDIR="${ENVDIR}/bin/"
     fi
     mkdir -p $RESOURCEDIR
     if [ "$OSNAME" == "Linux" ];then
-        mv dist/${PROGRAM}/* $RESOURCEDIR
-        cp -v "images/${PROGRAM}.png" "dist/${PROGRAM}"
-        echo "Setting up AppImage in dist/${PROGRAM}"
-        sed "s/%PROGRAM%/$PROGRAM/g" appimage/AppRun.tmpl > "dist/${PROGRAM}/AppRun"
+        cp -v "images/${PROGRAM}.png" "dist/"
+        echo "Setting up AppImage in dist"
+        sed "s/%PROGRAM%/$PROGRAM/g" appimage/AppRun.tmpl > "dist/AppRun"
         chmod 755 "dist/${PROGRAM}/AppRun"
-        sed "s/%PROGRAM%/$PROGRAM/g" appimage/template.desktop > "dist/${PROGRAM}/${PROGRAM}.desktop"
+        sed "s/%PROGRAM%/$PROGRAM/g" appimage/template.desktop > "dist/${PROGRAM}.desktop"
     fi
     if [ -d "images" ]; then
         echo "Copying Images to $RESOURCEDIR"
@@ -185,8 +183,7 @@ copyAssets(){
 }
 
 package() {
-        checkEnvActive
-
+    checkEnvActive
     if [ $OSNAME == "Darwin" ];then
         echo "Packaging MacApp into DMG..."
         echo "dmgbuild -s dmgsetup.py $PROGRAM $PROGRAM.dmg"
@@ -230,7 +227,7 @@ envSetup() {
     if [ -z "$VIRTUAL_ENV" ]; then
         if [ -d $ENVDIR ]; then
             echo "Activating virtual env ($ENVDIR) ..."
-            . env/bin/activate
+            . $ENVDIR/bin/activate
         else
             echo "Creating virtual env in $ENVDIR..."
             $PYTHONVER -mpip install virtualenv
@@ -243,7 +240,11 @@ envSetup() {
                 echo "Virtual env setup failed. Aborting..."
                 exit 1
             fi
-            . env/bin/activate
+            . $ENVDIR/bin/activate
+        fi
+        if [ -z "$VIRTUAL_ENV" ]; then
+            echo "Something failed activating virtual env..."
+            exit 1
         fi
     else
         echo "Already using $VIRTUAL_ENV"
