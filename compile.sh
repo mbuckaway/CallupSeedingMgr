@@ -262,10 +262,53 @@ envSetup() {
     fi
 }
 
+updateVersion() {
+	if [ -n "$GITHUB_REF" ]; then
+		echo "GITHUB_REF=$GITHUB_REF"
+			getVersion
+			# development build
+			GIT_TYPE=$(echo $GITHUB_REF | awk -F '/' '{print $2'})
+			GIT_TAG=$(echo $GITHUB_REF | awk -F '/' '{print $3'})
+			SHORTSHA=$(echo $GITHUB_SHA | cut -c 1-7)
+			VERSION=$(echo $VERSION | awk -F - '{print $1}')
+			if [ "$GIT_TYPE" == "heads" -a "$GIT_TAG" == "master" ]; then
+                echo "Refusing to build an untagged master build. Release builds on a tag only!"
+                exit 1
+            fi
+			if [ "$GIT_TYPE" == "heads" -a "$GIT_TAG" == "dev" ]; then
+				APPVERNAME="AppVerName=\"$PROGRAM $VERSION-beta-$SHORTSHA\""
+				VERSION="$VERSION-beta-$SHORTSHA"
+			fi
+			if [ "$GIT_TYPE" == "tags" ]; then
+				VERNO=$(echo $GIT_TAG | awk -F '-' '{print $1}')
+				REFDATE=$(echo $GIT_TAG | awk -F '-' '{print $2}')
+				MAJOR=$(echo $VERNO | awk -F '.' '{print $1}')
+				MINOR=$(echo $VERNO | awk -F '.' '{print $2}')
+				RELEASE=$(echo $VERNO | awk -F '.' '{print $3}')
+				if [ "$MAJOR" != "v3" -o -z "$MINOR" -o -z "$RELEASE" -o -z "$REFDATE" ]; then
+					echo "Invalid tag format. Must be v3.0.3-20200101010101. Refusing to build!"
+					exit 1
+				fi
+				APPVERNAME="AppVerName=\"$PROGRAM $VERSION-$REFDATE\""
+				VERSION="$GIT_TAG"
+			fi
+            if [ -z "$APPVERNAME" ]; then
+                echo "APPVERNAME is empty! [$APPVERNAME] Aborting..."
+                exit 1
+            fi
+			echo "$PROGRAM version is now $VERSION"
+            echo "New Version.py: [$APPVERNAME] - [$BUILDDIR/Version.py]"
+			echo "$APPVERNAME" > $BUILDDIR/Version.py
+	else
+		echo "Running a local build"
+	fi
+}
+
 buildall() {
     checkEnvActive
     cleanup
     getVersion
+    updateVersion
     compileCode
     doPyInstaller
     copylibs
@@ -293,6 +336,7 @@ $0 [ -hcCtaep: ]
  -d        - Download AppImage builder
  -S        - Setup environment
  -C        - Clean up everything
+ -u        - Update version
  -c        - Compile code
  -P        - Run pyinstaller
  -o        - Copy Assets to dist directory
@@ -319,7 +363,7 @@ EOF
 getVersion
 
 gotarg=0
-while getopts "hvcp:dSBPZokmATl" option
+while getopts "hvcp:dSBPZokmATlu" option
 do
     gotarg=1
     case ${option} in
@@ -343,6 +387,8 @@ do
         Z) buildLocale
         ;;
         o) copyAssets
+        ;;
+        u) updateVersion
         ;;
         k) package
         ;;
