@@ -134,7 +134,7 @@ if 'WXMAC' in wx.Platform:
 
 def LaunchApplication( fnames ):
 	for fname in (fnames if isinstance(fnames, list) else [fnames]):
-		if os.name is 'nt':
+		if os.name == 'nt':
 			subprocess.call(('cmd', '/C', 'start', '', fname))
 		elif sys.platform.startswith('darwin'):
 			subprocess.call(('open', fname))

@@ -16,3 +16,4 @@ pyinstaller
 pybabel
 metaphone
 whoosh
+markdown

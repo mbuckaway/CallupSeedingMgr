@@ -47,7 +47,10 @@ def CompileHelp( dir = '.' ):
 		with open('Links.md') as f:
 			links = f.read()
 			
-		for fname in glob.glob("./*.txt"):
+		for fname in glob.glob("./*.md"):
+			if fname.upper() == './LINKS.MD':
+				print("Skipping links file...")
+				continue
 			print(fname, '...')
 			with codecs.open(fname, 'r', encoding='utf8') as f:
 				input = StringIO()

@@ -136,6 +136,7 @@ buildLocale() {
 }
 
 copyAssets(){
+    checkEnvActive
     if [ "$OSNAME" == "Darwin" ]; then
         RESOURCEDIR="dist/${PROGRAM}.app/Contents/Resources/"
     else
@@ -146,7 +147,7 @@ copyAssets(){
         cp -v "images/${PROGRAM}.png" "dist/"
         echo "Setting up AppImage in dist"
         sed "s/%PROGRAM%/$PROGRAM/g" appimage/AppRun.tmpl > "dist/AppRun"
-        chmod 755 "dist/${PROGRAM}/AppRun"
+        chmod 755 "dist/AppRun"
         sed "s/%PROGRAM%/$PROGRAM/g" appimage/template.desktop > "dist/${PROGRAM}.desktop"
     fi
     if [ -d "images" ]; then
@@ -197,7 +198,7 @@ package() {
         downloadAppImage
         echo "Packaging Linux app to AppImage..."
         export ARCH=x86_64
-        ./${LINUXDEPLOY} --appdir "dist/${PROGRAM}"
+        ./${LINUXDEPLOY} --appdir "dist/"
         if [ $? -ne 0 ]; then
             echo "Packaging failed. Aborting..."
             exit 1
@@ -318,7 +319,7 @@ EOF
 getVersion
 
 gotarg=0
-while getopts "hvcp:dSBPZokmAT" option
+while getopts "hvcp:dSBPZokmATl" option
 do
     gotarg=1
     case ${option} in
@@ -354,6 +355,8 @@ do
         z) checkEnvActive
         ;;
         T) tagrelease
+        ;;
+        l) copylibs
         ;;
         *) doHelp
         ;;
