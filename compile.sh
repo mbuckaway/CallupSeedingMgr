@@ -91,8 +91,11 @@ getVersion() {
 cleanup() {
     echo "Cleaning up everything..."
     rm -rf __pycache__ CrossMgrImpinj/__pycache__ TagReadWrite/__pycache__ CrossMgrAlien/__pycache__ SeriesMgr/__pycache__
-    rm -rf dist build release
+    rm -rf build release
     rm -f *.spec
+    if [ -d dist/usr/bin ]; then
+        rm -f dist/usr/bin/*.py
+    fi
 }
 
 downloadAppImage() {
@@ -160,10 +163,10 @@ copyAssets(){
     fi
     if [ -d "htmldoc" ]; then
         echo "Copying HtmlDoc to $RESOURCEDIR"
-        cp -rv "${PROGRAM}HtmlDoc" $RESOURCEDIR
+        cp -rv "htmldoc" $RESOURCEDIR
     fi
     if [ -d "locale" ]; then
-        buildLocale $PROGRAM
+        buildLocale
         echo "Copying Locale to $RESOURCEDIR"
         cp -rv "locale" $RESOURCEDIR
     fi
@@ -241,6 +244,10 @@ envSetup() {
                 echo "Virtual env setup failed. Aborting..."
                 exit 1
             fi
+            echo "Fixing python binary..."
+            PYTHONLOC=$(readlink $ENVDIR/bin/python)
+            rm $ENVDIR/bin/python
+            cp $PYTHONLOC $ENVDIR/bin/python
             . $ENVDIR/bin/activate
         fi
         if [ -z "$VIRTUAL_ENV" ]; then
@@ -297,8 +304,8 @@ updateVersion() {
                 exit 1
             fi
 			echo "$PROGRAM version is now $VERSION"
-            echo "New Version.py: [$APPVERNAME] - [$BUILDDIR/Version.py]"
-			echo "$APPVERNAME" > $BUILDDIR/Version.py
+            echo "New Version.py: [$APPVERNAME] - [Version.py]"
+			echo "$APPVERNAME" > Version.py
 	else
 		echo "Running a local build"
 	fi
